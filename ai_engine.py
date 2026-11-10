@@ -262,7 +262,7 @@ def _legacy(path, crop_hint=None):
 def occlusion_map(path, sess=None, patch=36, stride=28, out="auto"):
     """黑盒可解释性：滑动遮挡，看模型置信度掉多少，掉得越多说明越看重该区域。
 
-    返回保存后的热力图相对路径（static/ai/xxx.png）。
+    返回保存后的热力图相对路径（img/ai/xxx.png，即 static/img/ai/）。
     """
     if sess is None:
         if not _load():
