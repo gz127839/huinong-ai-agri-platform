@@ -1,0 +1,41 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+envs/
+
+# ---------- 运行时数据 ----------
+agri.db
+*.db-journal
+*.sqlite3
+pipe_out.jsonl
+pipe_err.log
+_e2e.log
+*.log
+
+# ---------- 环境变量与密钥 ----------
+.env
+.env.local
+
+# ---------- 运行时生成的热力图 ----------
+static/img/ai/cam_*.png
+
+# ---------- 备份 / 调试 / 录制产物 ----------
+_backup_*/
+_ood_probe/
+_llm_shots/
+_deploy_agri/
+_delivery_*/
+
+# ---------- 编辑器与系统 ----------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- 发布/同步临时目录 ----------
+dist/
+build/

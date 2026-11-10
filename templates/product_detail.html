@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ p.name }} · 农产品详情 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / <a href="{{ url_for('shop') }}">农产品商城</a> / {{ p.name }}</div>
+
+  <div class="grid" style="grid-template-columns:minmax(300px,420px) 1fr;gap:26px;align-items:start;">
+    <div class="card" style="padding:18px;">
+      {% set pimg = product_image(p.name, p.image) %}
+      <div class="item-thumb" style="height:320px;">{% if pimg %}<img src="{{ asset(pimg) }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">{% else %}<svg style="width:96px;height:96px;"><use href="#i-{{ p.icon }}"></use></svg>{% endif %}</div>
+    </div>
+
+    <div class="card" style="padding:26px;">
+      <span class="tag">{{ p.category }}</span>
+      <h1 style="margin:10px 0 6px;font-size:26px;">{{ p.name }}</h1>
+      <p class="muted" style="margin-bottom:16px;">产地：{{ p.origin }} · 供货方：{{ p.farmer_name }}</p>
+      <div class="price" style="font-size:30px;">¥{{ '%.2f'|format(p.price) }} <small>/ {{ p.unit }}</small></div>
+      <p class="muted small" style="margin-top:6px;">当前可售库存：{{ p.stock }} {{ p.unit }}</p>
+
+      <div style="margin:20px 0;"><h4 style="margin-bottom:6px;">商品介绍</h4>
+        <p style="color:var(--text-2);margin:0;">{{ p.description }}</p></div>
+
+      <form method="post" action="{{ url_for('cart_add') }}" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <div class="qty-box">
+          <button type="button" onclick="var i=this.nextElementSibling;if(i.value>1)i.value--;">-</button>
+          <span><input id="qtyInput" name="qty" value="1" style="width:38px;border:none;text-align:center;font:inherit;font-weight:600;background:transparent;"></span>
+          <button type="button" onclick="var i=document.getElementById('qtyInput');i.value=parseInt(i.value||1)+1;">+</button>
+        </div>
+        <button class="btn btn-primary btn-lg" type="submit"><svg><use href="#i-cart"></use></svg>加入采购清单</button>
+        <a class="btn btn-outline btn-lg" href="{{ url_for('cart') }}">查看清单</a>
+      </form>
+
+      <form method="post" action="{{ url_for('message') }}" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);">
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <h4 style="margin-bottom:12px;">向农户咨询</h4>
+        <div class="form-grid">
+          <div class="field"><label>您的称呼</label><input class="input" name="name" placeholder="如：张老板" required></div>
+          <div class="field"><label>联系方式</label><input class="input" name="contact" placeholder="手机号或微信"></div>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>咨询内容</label>
+          <textarea class="input" name="content" placeholder="想了解规格、批发价、发货时间等，可在此留言" required></textarea>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px;" type="submit">提交咨询</button>
+      </form>
+
+      {% if msgs %}
+      <div style="margin-top:22px;">
+        <h4 style="margin-bottom:10px;">农户回复</h4>
+        {% for m in msgs %}
+        <div class="card" style="box-shadow:none;background:var(--green-050);margin-bottom:10px;padding:14px;">
+          <p class="small muted" style="margin:0 0 4px;">{{ m.name }} 提问 · {{ m.created_at }}</p>
+          <p style="margin:0 0 8px;font-size:14px;">{{ m.content }}</p>
+          <p style="margin:0;font-size:14px;color:var(--green-700);">农户回复：{{ m.reply }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related %}
+  <div class="section">
+    <div class="section-head"><div><h2 style="margin:0;">同类推荐</h2></div></div>
+    <div class="grid grid-4">
+      {% for r in related %}
+      <a class="card card-hover product-card" href="{{ url_for('product_detail', pid=r.id) }}">
+        {% set rimg = product_image(r.name, r.image) %}
+        <div class="item-thumb">{% if rimg %}<img src="{{ asset(rimg) }}" alt="{{ r.name }}" loading="lazy">{% else %}<svg><use href="#i-{{ r.icon }}"></use></svg>{% endif %}</div>
+        <div class="product-name">{{ r.name }}</div>
+        <div class="price">¥{{ '%.2f'|format(r.price) }} <small>/ {{ r.unit }}</small></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}农技知识库 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / 农技知识库</div>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">知识库</span>
+      <h1>农技知识库</h1>
+      <p>作物科普与病虫害防治资料全部开放浏览，支持关键词搜索和按作物分类查询</p>
+    </div>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('disease_recognize') }}"><svg><use href="#i-camera"></use></svg>拍照诊断</a>
+  </div>
+
+  <div class="tabs">
+    <a class="chip {% if tab=='crop' %}active{% endif %}" href="{{ url_for('knowledge', tab='crop') }}">作物科普</a>
+    <a class="chip {% if tab=='disease' %}active{% endif %}" href="{{ url_for('knowledge', tab='disease') }}">病虫害库</a>
+  </div>
+
+  <form class="card" method="get" action="{{ url_for('knowledge') }}" style="margin-bottom:22px;">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <div class="search-bar">
+      <svg class="ic" style="color:var(--muted);"><use href="#i-search"></use></svg>
+      <input class="input" type="text" name="kw" value="{{ kw }}" placeholder="{% if tab=='disease' %}搜索病害名称或症状，如 霜霉病、叶背白霉{% else %}搜索作物名称，如 水稻、苹果{% endif %}">
+      <select class="input" name="crop_id" style="max-width:190px;">
+        <option value="">全部作物</option>
+        {% for c in crops %}
+        <option value="{{ c.id }}" {% if crop_id==c.id %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">搜索</button>
+      <a class="btn btn-outline" href="{{ url_for('knowledge', tab=tab) }}">重置</a>
+    </div>
+  </form>
+
+  {% if tab=='disease' %}
+  <div class="grid grid-3">
+    {% for d in items %}
+    <a class="card card-hover item-card" href="{{ url_for('disease_detail', slug=d.slug) }}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <h3 style="margin:0;">{{ d.name }}</h3>
+        <span class="tag gray">{{ d.crop_name or '通用' }}</span>
+      </div>
+      <span class="tag warn" style="align-self:flex-start;">{{ d.dtype }}</span>
+      <p class="muted" style="margin:0;font-size:13px;">{{ d.symptoms[:70] }}…</p>
+      <div class="muted small">高发时段：{{ d.peak[:24] }}…</div>
+    </a>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1;"><svg><use href="#i-search"></use></svg><p>没有匹配的病虫害记录，换个关键词试试</p></div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="grid grid-4">
+    {% for c in items %}
+    <a class="card card-hover item-card" href="{{ url_for('crop_detail', slug=c.slug) }}">
+      <div class="item-thumb">{% if c.image %}<img src="{{ asset(c.image) }}" alt="{{ c.name }}">{% else %}<svg><use href="#i-{{ c.icon }}"></use></svg>{% endif %}</div>
+      <span class="tag">{{ c.category }}</span>
+      <div class="product-name">{{ c.name }}</div>
+      <p class="muted" style="margin:0 0 6px;font-size:13px;">{{ c.intro[:46] }}…</p>
+      <div class="muted small">别名：{{ c.alias }}</div>
+    </a>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1;"><svg><use href="#i-search"></use></svg><p>没有匹配的作物记录，换个关键词试试</p></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

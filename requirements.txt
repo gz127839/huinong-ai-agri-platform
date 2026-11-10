@@ -1,0 +1,11 @@
+# Web 框架与图像基础
+Flask>=3.0
+Pillow>=10.0
+numpy>=1.26
+
+# AI 推理引擎（MobileNetV2 真模型，CPU 即可运行）
+onnxruntime>=1.17
+
+# 可选：农技问答助手（LLM + RAG）。不装也不影响识别等核心功能，
+# 未配置 API Key 时问答页会自动提示"未启用"。
+# openai>=1.30

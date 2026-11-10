@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ crop.name }} · 作物科普 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / <a href="{{ url_for('knowledge') }}">农技知识库</a> / {{ crop.name }}</div>
+
+  <div class="card" style="padding:28px;margin-bottom:22px;">
+    <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
+      <div class="item-thumb" style="width:104px;height:104px;flex:none;margin:0;overflow:hidden;">
+        {% if crop.image %}<img src="{{ asset(crop.image) }}" alt="{{ crop.name }}" style="width:100%;height:100%;object-fit:cover;">{% else %}<svg style="width:52px;height:52px;"><use href="#i-{{ crop.icon }}"></use></svg>{% endif %}
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <h1 style="margin-bottom:6px;">{{ crop.name }} <span class="tag">{{ crop.category }}</span></h1>
+        <p class="muted" style="margin:0;">别名：{{ crop.alias }}</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{{ url_for('disease_recognize') }}"><svg><use href="#i-bug"></use></svg>病害诊断</a>
+        <a class="btn btn-outline" href="{{ url_for('shop', kw=crop.name) }}">看看相关农产品</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+      <h2 style="font-size:20px;">基础科普</h2>
+      <div class="detail-list">
+        <div class="detail-item"><dt>作物介绍</dt><dd>{{ crop.intro }}</dd></div>
+        <div class="detail-item"><dt>适合种植的地区</dt><dd>{{ crop.regions }}</dd></div>
+        <div class="detail-item"><dt>适合种植的季节</dt><dd>{{ crop.seasons }}</dd></div>
+        <div class="detail-item"><dt>生长习性</dt><dd>{{ crop.habits }}</dd></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px;">种植管理与经济价值</h2>
+      <div class="detail-list">
+        <div class="detail-item"><dt>基础种植管理</dt><dd>{{ crop.management }}</dd></div>
+        <div class="detail-item"><dt>经济价值</dt><dd>{{ crop.value }}</dd></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div><h2 style="margin:0;">{{ crop.name }}常见病害</h2>
+      <p>共 {{ diseases|length }} 条，点击可查看完整防治方案</p></div></div>
+    {% if diseases %}
+    <div class="grid grid-3">
+      {% for d in diseases %}
+      <a class="card card-hover item-card" href="{{ url_for('disease_detail', slug=d.slug) }}">
+        <h3 style="margin:0;">{{ d.name }}</h3>
+        <span class="tag warn" style="align-self:flex-start;">{{ d.dtype }}</span>
+        <p class="muted" style="margin:0;font-size:13px;">{{ d.symptoms[:70] }}…</p>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card empty">该作物暂无收录病害资料</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

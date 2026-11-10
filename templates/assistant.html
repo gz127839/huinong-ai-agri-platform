@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}农技问答助手 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / 农技问答助手</div>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">LLM + RAG</span>
+      <h1>农技问答助手</h1>
+      <p>先用关键词检索本地知识库（RAG 检索增强），再由大模型组织成面向农户的通俗回答——答案锚定知识库原文，降低"AI 幻觉"风险</p>
+    </div>
+  </div>
+
+  <div class="card" style="padding:14px 18px;margin-bottom:16px;border-left:4px solid #3f9e5a;">
+    <strong style="font-size:14px;">想要"自己规划、自己调工具"的，用农业智能体</strong>
+    <p class="muted" style="margin:6px 0 0;font-size:13px;">
+      本页是单向问答（检索 → 生成 → 结束）。<a href="{{ url_for('agent') }}">农业智能体</a>
+      会把识别、知识库、病害防治、商城都当作工具来调用，一步步观察结果、调整动作，最后给出可执行方案。</p>
+  </div>
+
+  {% if llm_enabled %}
+  <div class="card" style="padding:14px 18px;margin-bottom:16px;border-left:4px solid #3f9e5a;">
+    <strong style="font-size:14px;">已接入大模型：{{ llm_model }}
+      <span class="tag ok" style="margin-left:6px;">{{ llm_label }}</span></strong>
+    <p class="muted" style="margin:6px 0 0;font-size:13px;">
+      本页采用 <b>RAG 检索增强生成</b>：先从本地知识库（{{ refs_count }} 条作物/病害资料）检索最相关条目，
+      再由大模型<b>仅依据检索结果</b>组织回答——答案锚定原文，抑制幻觉；输出统一清洗为纯文本，稳定可控。
+      也可换成自备的 DeepSeek / 通义 / 智谱等 OpenAI 兼容接口（改 3 个环境变量即可）。</p>
+  </div>
+  {% else %}
+  <div class="card" style="padding:16px 20px;margin-bottom:18px;border-left:4px solid #d9a441;">
+    <strong>助手当前处于"仅检索"模式</strong>
+    <p class="muted" style="margin:6px 0 0;font-size:13px;">
+      大模型通道暂不可用（云服务未连通，且未配置自备 Key），提问将直接返回知识库检索结果。
+      部署方可在环境变量中配置
+      <code>AI_LLM_BASE_URL / AI_LLM_API_KEY / AI_LLM_MODEL</code>
+      （任意 OpenAI 兼容接口）后重启启用完整问答。</p>
+  </div>
+  {% endif %}
+
+  <form class="card" method="post" action="{{ url_for('assistant') }}" style="margin-bottom:22px;">
+    <div class="search-bar">
+      <svg class="ic" style="color:var(--muted);"><use href="#i-search"></use></svg>
+      <input class="input" type="text" name="question" value="{{ question }}"
+             placeholder="问点什么，如：番茄叶片出现褐色轮纹斑怎么办？马铃薯什么时候适合种植？">
+      <button class="btn btn-primary" type="submit">提问</button>
+    </div>
+  </form>
+
+  {% if result %}
+    {% if result.error %}<p class="muted small" style="margin-top:-10px;">{{ result.error }}</p>{% endif %}
+
+    {% if result.answer %}
+    <div class="card" style="padding:22px 24px;margin-bottom:18px;">
+      <span class="tag ok">AI 回答{% if llm_model %}（{{ llm_model }}{% if llm_label %} · {{ llm_label }}{% endif %}）{% endif %} ·
+        基于 {{ result.refs|length }} 条知识库资料生成</span>
+      <div style="margin-top:10px;line-height:1.9;white-space:pre-wrap;">{{ result.answer }}</div>
+      <p class="muted small" style="margin:12px 0 0;">以上内容仅供参考，重要病虫害请结合田间实际症状并咨询当地农技站复核。</p>
+    </div>
+    {% endif %}
+
+    {% if result.refs %}
+    <h2 style="font-size:18px;margin:0 0 10px;">命中的知识库条目</h2>
+    <div class="grid grid-2">
+      {% for r in result.refs %}
+      <div class="card" style="padding:16px 18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <strong>{{ r.title }}</strong>
+          <span class="tag gray">{{ r.kind }}</span>
+        </div>
+        <p class="muted" style="margin:8px 0 0;font-size:13px;white-space:pre-wrap;">{{ r.content[:280] }}{% if r.content|length > 280 %}…{% endif %}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><svg><use href="#i-search"></use></svg><p>知识库中没有检索到相关资料，换个问法试试（如提及作物名或病害名）</p></div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

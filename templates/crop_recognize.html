@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}AI 作物识别 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / AI 作物识别</div>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">功能一</span>
+      <h1>农作物智能识别与作物科普</h1>
+      <p>电脑端上传本地图片，手机端点击「拍照识别」直接调用摄像头。识别完成后同步展示该作物的适种区域、
+         种植季节、生长习性、栽培管理要点与经济价值。</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">上传作物图片</h3>
+      <form method="post" enctype="multipart/form-data" data-loading>
+        <div class="upload-zone" id="uploadZone">
+          <div class="uz-icon"><svg><use href="#i-upload"></use></svg></div>
+          <strong style="color:var(--green-800);">点击选择图片，或将图片拖入此区域</strong>
+          <p class="muted" style="margin:6px 0 0;font-size:13px;">支持 jpg / png / webp，单张不超过 8MB</p>
+          <p class="muted" style="margin:6px 0 0;font-size:13px;">AI 病害模型可诊断：{{ ai_crops }}。
+            识别依据为 5 万余张作物<strong>叶片</strong>样本，请尽量上传叶片特写。</p>
+          {% if kb_only %}
+          <p class="muted" style="margin:6px 0 0;font-size:13px;">
+            <strong>{{ kb_only | join("、") }}</strong> 等作物：知识库已有完整科普与防治资料，
+            但公开可用的标注训练样本不足，模型暂未学习，识别时会如实提示（不会给错误结论）。</p>
+          {% endif %}
+          <div class="upload-actions">
+            <button type="button" class="btn btn-outline btn-sm" id="pickBtn"><svg><use href="#i-upload"></use></svg>选择文件</button>
+            <button type="button" class="btn btn-primary btn-sm" id="cameraBtn"><svg><use href="#i-camera"></use></svg>拍照识别</button>
+          </div>
+        </div>
+        <input class="hidden-input" type="file" name="image" id="imageInput" accept="image/*">
+        <div class="preview-box" id="previewBox">
+          <img id="previewImg" alt="待识别图片">
+        </div>
+        <p class="muted small" id="fileName" style="margin:10px 0 0;"></p>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submitBtn" style="margin-top:16px;" disabled>
+          <svg><use href="#i-spark"></use></svg>开始识别
+        </button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:14px;">拍照建议</h3>
+      <div class="detail-list">
+        <div class="detail-item"><dt>拍哪里</dt><dd>尽量拍摄完整叶片或果实，占画面 60% 以上，识别更准确。</dd></div>
+        <div class="detail-item"><dt>光线</dt><dd>选择自然光下的散射光，避免强光直射造成的反光与偏色。</dd></div>
+        <div class="detail-item"><dt>距离</dt><dd>手机距离植株 20~40 厘米对焦清晰后拍摄，避免模糊。</dd></div>
+        <div class="detail-item"><dt>背景</dt><dd>尽量减少泥土、杂草等干扰背景，突出主体。</dd></div>
+      </div>
+      <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line);">
+        <h4 style="margin-bottom:10px;">也可以直接浏览知识库</h4>
+        <div class="alt-list">
+          {% for c in crops %}
+          <a href="{{ url_for('crop_detail', slug=c.slug) }}">{{ c.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if result and result.crop %}
+  <div class="section">
+    <div class="card" style="padding:26px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <h2 style="margin:0;">识别结果</h2>
+        <span class="tag ok">识别完成</span>
+        {% if result.ai and result.ai.engine == 'onnx-mobilenetv2-transfer' %}
+        <span class="tag" style="background:#e8f5ec;color:var(--green-700);">深度模型 · MobileNetV2 迁移学习</span>
+        {% endif %}
+        {% if result.species %}
+        <span class="tag" style="background:#eef4ff;color:#2b5cd9;">实景物种识别 · iNaturalist 迁移学习</span>
+        {% endif %}
+      </div>
+      <div class="result-grid">
+        <div>
+          <div class="result-image"><img src="{{ result.image }}" alt="识别图片"></div>
+          <div class="card" style="margin-top:16px;box-shadow:none;background:var(--green-050);">
+            <h4 style="margin-bottom:8px;">图像特征分析</h4>
+            <ul style="margin:0;padding-left:18px;color:var(--text-2);font-size:14px;">
+              {% for tip in result.analysis.summary %}<li>{{ tip }}</li>{% endfor %}
+            </ul>
+          </div>
+          {% include "_ai_panel.html" %}
+        </div>
+        <div>
+          <div class="result-head" style="margin-bottom:18px;">
+            <div class="confidence-ring" style="--p:{{ result.confidence }};"><span>{{ result.confidence }}%</span></div>
+            <div>
+              <h2 style="margin:0 0 4px;">{{ result.crop.name }} <span class="tag">{{ result.crop.category }}</span></h2>
+              <p class="muted" style="margin:0;">别名：{{ result.crop.alias }} · 识别置信度 {{ result.confidence }}%（结果仅供参考，结合实际田间情况判断）</p>
+            </div>
+          </div>
+          {% if result.alts %}
+          <div style="margin-bottom:18px;">
+            <h4 style="margin-bottom:8px;">其他可能</h4>
+            <div class="alt-list">
+              {% for a in result.alts %}
+              <a href="{{ url_for('crop_detail', slug=a.slug) }}">{{ a.name }} · {{ a.confidence }}%</a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          <div class="info-block"><h4><svg><use href="#i-book"></use></svg>作物介绍</h4><p>{{ result.crop.intro }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-home"></use></svg>适合种植的地区</h4><p>{{ result.crop.regions }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-sun"></use></svg>适合种植的季节</h4><p>{{ result.crop.seasons }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-drop"></use></svg>生长习性</h4><p>{{ result.crop.habits }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-check"></use></svg>基础种植管理</h4><p>{{ result.crop.management }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-chart"></use></svg>经济价值</h4><p>{{ result.crop.value }}</p></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+            <a class="btn btn-primary" href="{{ url_for('crop_detail', slug=result.crop.slug) }}">查看完整科普</a>
+            <a class="btn btn-outline" href="{{ url_for('disease_recognize') }}">接着做病害诊断</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% elif result %}
+  <div class="section">
+    <div class="card" style="padding:26px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <h2 style="margin:0;">识别结果</h2>
+        <span class="tag warn">作物未被本地科普库收录</span>
+      </div>
+      <div class="result-grid">
+        <div>
+          <div class="result-image"><img src="{{ result.image }}" alt="识别图片"></div>
+          {% include "_ai_panel.html" %}
+        </div>
+        <div>
+          <div class="result-head" style="margin-bottom:18px;">
+            <div class="confidence-ring" style="--p:{{ (result.species.conf_pct | round(0) | int) if result.species and result.species.known else ((result.aux.conf * 100) | round(0) | int if result.aux else (result.ai.crop.conf if result.ai and result.ai.crop else 0)) }};">
+              <span>{{ (result.species.conf_pct | round(0) | int) if result.species and result.species.known else ((result.aux.conf * 100) | round(0) | int if result.aux else (result.ai.crop.conf if result.ai and result.ai.crop else 0)) }}%</span></div>
+            <div>
+              {% if result.ai and result.ai.known is defined and not result.ai.known %}
+              {% if result.species and result.species.known %}
+              <h2 style="margin:0 0 4px;">{{ result.species.cn }}{% if result.species.maybe %}
+                <span class="tag warn">疑似，仅供参考</span>{% endif %}</h2>
+              <p class="muted" style="margin:0;">作物<b>物种识别</b>模型（2 000+ 张 iNaturalist 田间实景照片训练）
+                 认出这是「{{ result.species.cn }}」，置信度 {{ result.species.conf_pct }}%，
+                 与该类原型的匹配度 {{ result.species.sim }}%。
+                 病害诊断模型基于作物<b>叶片</b>样本训练，如需病害结论请再上传叶片特写照片。</p>
+              {% if result.species.slug %}
+              <p style="margin:8px 0 0;"><a href="{{ url_for('crop_detail', slug=result.species.slug) }}">查看「{{ result.species.cn }}」的科普与病虫害知识 →</a></p>
+              {% endif %}
+              {% elif result.aux %}
+              <h2 style="margin:0 0 4px;">{{ result.aux.name }}{% if result.aux.maybe %}
+                <span class="tag warn">疑似，仅供参考</span>{% endif %}</h2>
+              <p class="muted" style="margin:0;">通用视觉模型（ImageNet 预训练）{% if result.aux.maybe %}
+                 判断这可能{% else %}认出这{% endif %}是「{{ result.aux.name }}」
+                 （{{ result.aux.enet }}，置信度 {{ (result.aux.conf * 100) | round(1) }}%）。
+                 它{% if result.aux.maybe %}可能{% endif %}不是叶片病害照片——平台的病害诊断模型基于 5 万张作物<b>叶片</b>样本训练，
+                 请上传叶片照片获得病害结论。</p>
+              {% if result.aux.slug %}
+              <p style="margin:8px 0 0;"><a href="{{ url_for('crop_detail', slug=result.aux.slug) }}">查看「{{ result.aux.name }}」的科普与病虫害知识 →</a></p>
+              {% endif %}
+              {% elif result.species and not result.species.known %}
+              <h2 style="margin:0 0 4px;">平台未收录该作物（已主动拒识）</h2>
+              <p class="muted" style="margin:0;">物种识别模型判定这张照片<b>不属于平台已收录的 14 种作物</b>，
+                 因此不给出作物结论、更不会给出病害与用药建议——避免"看着像就下结论"误导农事操作。</p>
+              <div class="info-block" style="margin-top:12px;">
+                <h4><svg><use href="#i-shield"></use></svg>拒识依据</h4>
+                <ul style="margin:6px 0 0;padding-left:20px;line-height:1.9;">
+                  {% for r in result.species.reject_reasons %}<li>{{ r }}</li>{% endfor %}
+                  {% if result.species.fuse_score is not none %}
+                  <li>三重证据综合分位 {{ (result.species.fuse_score * 100) | round(0) }}%，
+                      低于放行阈值 {{ (result.species.fuse_thr * 100) | round(0) }}%
+                      <span class="muted">（三项证据：判别式 / 分类得分 / 最近邻相似度，
+                      各自换算成在已收录作物上的分位后取平均）</span></li>
+                  {% else %}
+                  <li>未收录概率 {{ result.species.unk_prob }}%（阈值 50%）</li>
+                  {% endif %}
+                  {% if result.species.nn_sim is not none %}
+                  <li>与已收录样本的最近邻相似度 {{ result.species.nn_sim }}</li>
+                  {% endif %}
+                </ul>
+              </div>
+              {% if result.aux %}
+              <p class="muted small" style="margin:10px 0 0;">通用视觉模型（ImageNet）另给出外观猜测：
+                 「{{ result.aux.name }}」{% if result.aux.maybe %}（置信度仅 {{ (result.aux.conf*100)|round(0) }}%，不作为结论）{% endif %}
+                 {% if not result.aux.slug %}——该作物同样不在平台知识库内。{% endif %}</p>
+              {% endif %}
+              {% else %}
+              <h2 style="margin:0 0 4px;">暂不支持该作物</h2>
+              <p class="muted" style="margin:0;">开放集检测：图片特征与平台已支持的 14 种作物匹配度仅
+                 {{ result.ai.ood_sim }}%，低于拒识阈值，平台主动拒绝给出结论以避免误导。</p>
+              <p class="muted small" style="margin:6px 0 0;">您上传的可能是尚未收录的作物。
+                 外观上最接近的已知类别为「{{ result.ai.top[0].cn if result.ai and result.ai.top else '—' }}」（仅供参考）。</p>
+              {% endif %}
+              {% else %}
+              <h2 style="margin:0 0 4px;">{{ result.ai.crop.cn if result.ai and result.ai.crop else '未能识别' }}</h2>
+              <p class="muted" style="margin:0;">模型已给出判定，但平台科普库目前只收录 14 种主要作物，
+                 可先查看下方模型明细，或浏览知识库中已收录的作物。</p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="alt-list">
+            {% for c in crops %}<a href="{{ url_for('crop_detail', slug=c.slug) }}">{{ c.name }}</a>{% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}AI 病虫害诊断 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / AI 病虫害诊断</div>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">功能二</span>
+      <h1>农作物病虫害识别与防治指导</h1>
+      <p>拍摄发病部位的清晰照片，系统识别病害种类后输出发病特征、发病诱因、高发时段，
+         以及物理防治、用药建议、田间整改与后期预防的完整方案。</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">上传病害照片</h3>
+      <form method="post" enctype="multipart/form-data" data-loading>
+        <div class="field" style="margin-bottom:14px;">
+          <label for="crop_id">作物种类（可选，选择后识别更精准）</label>
+          <select class="input" id="crop_id" name="crop_id">
+            <option value="">不确定 / 自动判断</option>
+            {% for c in crops %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="upload-zone" id="uploadZone">
+          <div class="uz-icon"><svg><use href="#i-upload"></use></svg></div>
+          <strong style="color:var(--green-800);">点击选择图片，或将图片拖入此区域</strong>
+          <p class="muted" style="margin:6px 0 0;font-size:13px;">建议拍摄病斑特写，尽量让病斑占画面主体</p>
+          <p class="muted" style="margin:6px 0 0;font-size:13px;">AI 病害模型可诊断：{{ ai_crops }}。
+            识别依据为 5 万余张作物<strong>叶片</strong>样本，请上传带病斑的叶片特写。</p>
+          {% if kb_only %}
+          <p class="muted" style="margin:6px 0 0;font-size:13px;">
+            <strong>{{ kb_only | join("、") }}</strong> 等作物知识库已有完整科普与防治资料，
+            但缺少公开标注样本，模型暂未学习；选这些作物上传时，系统会直接给出知识库中的病害资料。</p>
+          {% endif %}
+          <div class="upload-actions">
+            <button type="button" class="btn btn-outline btn-sm" id="pickBtn"><svg><use href="#i-upload"></use></svg>选择文件</button>
+            <button type="button" class="btn btn-primary btn-sm" id="cameraBtn"><svg><use href="#i-camera"></use></svg>拍照诊断</button>
+          </div>
+        </div>
+        <input class="hidden-input" type="file" name="image" id="imageInput" accept="image/*">
+        <div class="preview-box" id="previewBox"><img id="previewImg" alt="待识别图片"></div>
+        <p class="muted small" id="fileName" style="margin:10px 0 0;"></p>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submitBtn" style="margin-top:16px;" disabled>
+          <svg><use href="#i-spark"></use></svg>开始诊断
+        </button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:14px;">拍摄要点</h3>
+      <div class="detail-list">
+        <div class="detail-item"><dt>拍病斑</dt><dd>对准病斑中心拍摄，包含病斑与健康组织的交界处，特征最明显。</dd></div>
+        <div class="detail-item"><dt>拍叶背</dt><dd>霜霉病、疫病等霉层多长在叶背，建议正反面各拍一张。</dd></div>
+        <div class="detail-item"><dt>拍整体</dt><dd>再拍一张整株或整田照片，帮助判断发生程度。</dd></div>
+        <div class="detail-item"><dt>及时性</dt><dd>发现疑似症状尽早诊断，蔓延后再防治成本成倍上升。</dd></div>
+      </div>
+      <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line);">
+        <h4 style="margin-bottom:10px;">按作物查病害</h4>
+        <div class="alt-list">
+          {% for d in diseases %}
+          <a href="{{ url_for('disease_detail', slug=d.slug) }}">{{ d.crop_name }} · {{ d.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="section">
+    <div class="card" style="padding:26px;">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <h2 style="margin:0;">诊断结果</h2>
+        {% if result.healthy %}<span class="tag ok">未发现明显病斑</span>{% else %}<span class="tag warn">疑似发病</span>{% endif %}
+      </div>
+
+      {% if result.healthy %}
+      <div class="result-grid">
+        <div>
+          <div class="result-image"><img src="{{ result.image }}" alt="诊断图片"></div>
+          <div class="card" style="margin-top:16px;box-shadow:none;background:var(--green-050);">
+            <h4 style="margin-bottom:8px;">图像特征分析</h4>
+            <ul style="margin:0;padding-left:18px;color:var(--text-2);font-size:14px;">
+              {% for tip in result.analysis.summary %}<li>{{ tip }}</li>{% endfor %}
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div class="result-head" style="margin-bottom:18px;">
+            <div class="confidence-ring" style="--p:{{ result.confidence or 92 }};"><span>{{ result.confidence or 92 }}%</span></div>
+            <div>
+              <h2 style="margin:0 0 4px;">植株状态良好</h2>
+              <p class="muted" style="margin:0;">图像中绿色组织占比正常，未检出明显病斑特征，建议继续保持现有管理措施。</p>
+            </div>
+          </div>
+          <div class="info-block"><h4><svg><use href="#i-check"></use></svg>后续建议</h4>
+            <p>保持合理的水肥管理，避免偏施氮肥造成旺长。
+定期巡查田间，重点查看下部老叶与叶背。
+雨季来临前喷施一次保护性杀菌剂做预防。
+发现个别病叶及时摘除并带出田外处理。</p>
+          </div>
+          {% if result.crop %}
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <a class="btn btn-primary" href="{{ url_for('crop_detail', slug=result.crop.slug) }}">查看 {{ result.crop.name }} 种植要点</a>
+          </div>
+          {% endif %}
+          {% include "_ai_panel.html" %}
+        </div>
+      </div>
+      {% else %}
+      <div class="result-grid">
+        <div>
+          <div class="result-image"><img src="{{ result.image }}" alt="诊断图片"></div>
+          <div class="card" style="margin-top:16px;box-shadow:none;background:var(--green-050);">
+            <h4 style="margin-bottom:8px;">图像特征分析</h4>
+            <ul style="margin:0;padding-left:18px;color:var(--text-2);font-size:14px;">
+              {% for tip in result.analysis.summary %}<li>{{ tip }}</li>{% endfor %}
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div class="result-head" style="margin-bottom:18px;">
+            <div class="confidence-ring" style="--p:{{ (result.species.conf_pct | round(0) | int) if result.species and result.species.known else ((result.aux.conf * 100) | round(0) | int if result.aux else result.confidence) }};"><span>{{ (result.species.conf_pct | round(0) | int) if result.species and result.species.known else ((result.aux.conf * 100) | round(0) | int if result.aux else result.confidence) }}%</span></div>
+            <div>
+              <h2 style="margin:0 0 4px;">
+                {% if result.ai and result.ai.known is defined and not result.ai.known %}
+                  {% if result.species and result.species.known %}{{ result.species.cn }}
+                    <span class="tag">物种识别</span>
+                  {% elif result.aux %}{{ result.aux.name }}{% else %}暂不支持该作物{% endif %}
+                {% elif result.disease %}{{ result.disease.name }}
+                  <span class="tag warn">{{ result.disease.dtype }}</span>
+                {% else %}{{ result.ai.fine.cn if result.ai and result.ai.fine else '未能识别' }}{% endif %}
+              </h2>
+              {% if result.ai and result.ai.known is defined and not result.ai.known %}
+              {% if result.species and result.species.known %}
+              <p class="muted" style="margin:0;">作物<b>物种识别</b>模型（2 000+ 张田间实景照片训练）判定这是
+                「{{ result.species.cn }}」，置信度 {{ result.species.conf_pct }}%，原型匹配度 {{ result.species.sim }}%。</p>
+              <p class="muted small" style="margin:6px 0 0;">
+                已确认作物种类，但本张照片未携带可用于诊断的<b>叶片病斑</b>信息——
+                病害诊断模型基于作物叶片样本训练，请再上传一张<b>叶片特写</b>照片即可获得病害结论{% if result.species.slug %}，或
+                <a href="{{ url_for('crop_detail', slug=result.species.slug) }}">查看「{{ result.species.cn }}」的病虫害知识</a>{% endif %}。</p>
+              {% elif result.aux %}
+              <p class="muted" style="margin:0;">通用视觉模型（ImageNet 预训练）认出这是「{{ result.aux.name }}」
+                （{{ result.aux.enet }}，置信度 {{ (result.aux.conf * 100) | round(1) }}%）。</p>
+              <p class="muted small" style="margin:6px 0 0;">
+                果实/籽粒照片不携带病斑信息——平台的病害诊断模型基于 5 万张作物<b>叶片</b>样本训练，
+                请上传该作物的<b>叶片</b>照片即可获得病害结论{% if result.aux.slug %}，或
+                <a href="{{ url_for('crop_detail', slug=result.aux.slug) }}">查看「{{ result.aux.name }}」的病虫害知识</a>{% endif %}。</p>
+              {% else %}
+              <p class="muted" style="margin:0;">开放集检测：图片特征与病害诊断模型已支持的
+                <strong>14 种作物</strong>（叶片样本训练）匹配度仅 {{ result.ai.ood_sim }}%，低于拒识阈值；
+                实景物种识别通道也未达到可信标准（最像「{{ result.ai.top[0].cn if result.ai and result.ai.top else '—' }}」，仅供参考）。</p>
+              <p class="muted small" style="margin:6px 0 0;">
+                为避免误判导致错误用药，平台主动拒绝给出病害结论。建议拍摄该作物的<b>清晰叶片特写</b>再试，
+                或直接到<a href="{{ url_for('knowledge') }}">农技知识库</a>按作物浏览病害资料。</p>
+              {% endif %}
+              {% if result.kb_fallback %}
+              <div class="card" style="padding:16px;margin-top:14px;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <h3 style="margin:0;font-size:16px;">{{ result.kb_fallback.crop.name }} · 知识库资料</h3>
+                  <span class="tag">科普与防治</span>
+                </div>
+                <p class="muted small" style="margin:8px 0 10px;">
+                  该作物在平台知识库中已有完整科普，但公开可用的<b>标注训练样本</b>不足，
+                  病害模型暂未学习，因此不做图像诊断。以下为知识库收录的常见病害，可对照症状人工判断：</p>
+                {% if result.kb_fallback.diseases %}
+                <div class="alt-list">
+                  {% for d in result.kb_fallback.diseases %}
+                  <a href="{{ url_for('disease_detail', slug=d.slug) }}">{{ d.name }}</a>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <p class="muted small">知识库暂未收录该作物的病害条目，可到
+                  <a href="{{ url_for('knowledge') }}">农技知识库</a>浏览全部资料。</p>
+                {% endif %}
+                <p class="muted small" style="margin:10px 0 0;">
+                  <a href="{{ url_for('crop_detail', slug=result.kb_fallback.crop.slug) }}">查看「{{ result.kb_fallback.crop.name }}」完整科普 →</a></p>
+              </div>
+              {% endif %}
+              {% else %}
+              <p class="muted" style="margin:0;">寄主作物：{{ result.crop.name if result.crop else '通用' }} ·
+                识别置信度 {{ result.confidence }}%（请结合田间实际症状复核）</p>
+              {% if not result.disease %}
+              <p class="muted small" style="margin:6px 0 0;">该病害已由模型识别，但本地防治知识库暂未收录该条目，
+                 建议结合下列通用措施处理，或咨询当地农技推广站。</p>
+              {% endif %}
+              {% endif %}
+            </div>
+          </div>
+          {% if result.alts %}
+          <div style="margin-bottom:18px;">
+            <h4 style="margin-bottom:8px;">其他可能</h4>
+            <div class="alt-list">
+              {% for a in result.alts %}
+              <a href="{{ url_for('disease_detail', slug=a.slug) }}">{{ a.name }} · {{ a.confidence }}%</a>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if result.disease %}
+          <div class="info-block"><h4><svg><use href="#i-bug"></use></svg>发病特征</h4><p>{{ result.disease.symptoms }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-drop"></use></svg>发病诱因</h4><p>{{ result.disease.cause }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-sun"></use></svg>高发时间段</h4><p>{{ result.disease.peak }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-check"></use></svg>物理防治手段</h4><p>{{ result.disease.physical }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-shield"></use></svg>合理用药建议</h4><p>{{ result.disease.chemical }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-truck"></use></svg>田间整改管理</h4><p>{{ result.disease.field_mgmt }}</p></div>
+          <div class="info-block"><h4><svg><use href="#i-chart"></use></svg>后期预防措施</h4><p>{{ result.disease.prevention }}</p></div>
+          <p class="muted small">用药提示：请严格遵守农药标签登记的作物、剂量与安全间隔期，做好个人防护，
+             空包装集中回收处理。本平台给出的方案为通用技术参考，大面积施药前建议先小范围试验。</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;">
+            <a class="btn btn-primary" href="{{ url_for('disease_detail', slug=result.disease.slug) }}">查看完整防治方案</a>
+            <a class="btn btn-outline" href="{{ url_for('disease_recognize') }}">再诊断一张</a>
+          </div>
+          {% else %}
+          <div class="info-block"><h4><svg><use href="#i-check"></use></svg>通用处置建议</h4>
+            <p>及时摘除并带出田间销毁重病叶，减少再侵染源。<br>
+               降低田间湿度，改善通风透光，避免偏施氮肥。<br>
+               发病初期选用对应类别的登记药剂按说明喷施，注意轮换用药。<br>
+               连续阴雨前后各喷一次保护性杀菌剂做预防。</p></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;">
+            <a class="btn btn-outline" href="{{ url_for('disease_recognize') }}">再诊断一张</a>
+            {% if result.crop %}<a class="btn btn-primary" href="{{ url_for('crop_detail', slug=result.crop.slug) }}">查看 {{ result.crop.name }} 种植要点</a>{% endif %}
+          </div>
+          {% endif %}
+          {% include "_ai_panel.html" %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

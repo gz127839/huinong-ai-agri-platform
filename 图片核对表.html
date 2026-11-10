@@ -1,0 +1,302 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<title>慧农AI 图片-文字对应核对表</title>
+<style>
+  body{font-family:"Microsoft YaHei",system-ui,sans-serif;margin:0;padding:28px;background:#f6f7f9;color:#222}
+  h1{font-size:22px;margin:0 0 6px}
+  p.lead{color:#555;margin:0 0 22px;font-size:14px;line-height:1.7}
+  h2{font-size:18px;margin:28px 0 12px;padding-left:10px;border-left:4px solid #2e7d4f}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .card{background:#fff;border:1px solid #e3e6ea;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+  .card img{width:100%;height:180px;object-fit:cover;background:#eceff1}
+  .meta{padding:10px 12px}
+  .fn{font-size:12px;color:#888;font-family:Consolas,monospace}
+  .tt{font-size:14px;margin:4px 0}
+  .vd{font-size:13px;margin:4px 0;font-weight:600}
+  .nt{font-size:12px;padding:6px 8px;border-radius:6px;margin-top:4px;line-height:1.5}
+  .tip{background:#eef4ff;border:1px solid #cfe0ff;padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:8px;line-height:1.7}
+</style></head><body>
+<h1>慧农AI 智慧农业平台 · 图片与文字对应核对表</h1>
+<p class="lead">生成时间：2026-10-25 22:40　｜　用途：逐张确认「作物科普图 / 商品图」与其名称是否对得上。<br>
+模型判定由本地 MobileNetV2（ImageNet）给出；<b>ImageNet 里没有番茄、葡萄、马铃薯、水稻、茶、大豆这些类别</b>，所以标 <span style="color:#b26a00">? 需你目视确认</span> 的必须由你眼睛过一遍。</p>
+<div class="tip"><b>已修复的两处（你指出的问题）</b>：柑橘图原本被放在「辣椒」位、草莓图原本被放在「大豆」位，现已互换回来，模型复验通过（柑橘 95%、草莓 98.7%）。<br>
+<b>本次发现的新问题</b>：番茄/黄瓜还有两组冗余文件（tomato.jpg 实际是黄瓜图、cucumber.jpg 与 tomato2.jpg 内容重复），数据库目前指向的是正确的那两张，多余文件建议删除。</div>
+
+<h2>一、作物科普图（static/img/crops/）</h2>
+<div class="grid">
+      <div class="card">
+        <img src="static/img/crops/apple.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">apple.jpg</div>
+          <div class="tt">用于：<b>苹果</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：苹果 86%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/citrus.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">citrus.jpg</div>
+          <div class="tt">用于：<b>柑橘</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：柑橘 95%</div>
+          <div class="nt" style="background:#e8f5ec">已修复（原为柑橘图被放到辣椒位）</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/pepper.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">pepper.jpg</div>
+          <div class="tt">用于：<b>辣椒</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：无明确命中（疑似辣椒）</div>
+          <div class="nt" style="background:#fff4e5">已互换过来，请你确认是不是辣椒</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/strawberry.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">strawberry.jpg</div>
+          <div class="tt">用于：<b>草莓</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：草莓 98.7%</div>
+          <div class="nt" style="background:#e8f5ec">已修复</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/soybean.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">soybean.jpg</div>
+          <div class="tt">用于：<b>大豆</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：无（判成 corn 34%）</div>
+          <div class="nt" style="background:#fff4e5">已互换过来，请你确认是不是大豆</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/cucumber2.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">cucumber2.jpg</div>
+          <div class="tt">用于：<b>黄瓜</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：黄瓜 99.9%</div>
+          <div class="nt" style="background:#e8f5ec">数据库指向此图，正确</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/tomato2.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">tomato2.jpg</div>
+          <div class="tt">用于：<b>番茄</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：甜椒 47%（ImageNet 无番茄类，番茄常被判甜椒）</div>
+          <div class="nt" style="background:#fff4e5">请你确认是不是番茄</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/grape.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">grape.jpg</div>
+          <div class="tt">用于：<b>葡萄</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：无（buckeye 49%）</div>
+          <div class="nt" style="background:#fff4e5">ImageNet 无葡萄类，请确认</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/potato.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">potato.jpg</div>
+          <div class="tt">用于：<b>马铃薯</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：无（lemon 16%）</div>
+          <div class="nt" style="background:#fff4e5">ImageNet 无马铃薯类，请确认</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/rice.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">rice.jpg</div>
+          <div class="tt">用于：<b>水稻</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：无（quill 25%）</div>
+          <div class="nt" style="background:#fff4e5">请确认</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/tea.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">tea.jpg</div>
+          <div class="tt">用于：<b>茶树</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：无（pot 80%，疑似茶壶/茶具）</div>
+          <div class="nt" style="background:#fff4e5">请确认是茶园还是茶具</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/maize.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">maize.jpg</div>
+          <div class="tt">用于：<b>玉米</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：玉米穗 71%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/wheat.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">wheat.jpg</div>
+          <div class="tt">用于：<b>小麦</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：禾谷穗 57%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/rapeseed.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">rapeseed.jpg</div>
+          <div class="tt">用于：<b>油菜</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：rapeseed 33%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/tomato.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">tomato.jpg</div>
+          <div class="tt">用于：<b>（未使用，冗余）</b></div>
+          <div class="vd" style="color:#c0392b">✗ 确认错位：黄瓜 99.9%</div>
+          <div class="nt" style="background:#fdecea">内容是黄瓜，建议删或用番茄图覆盖</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/crops/cucumber.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">cucumber.jpg</div>
+          <div class="tt">用于：<b>（未使用，冗余）</b></div>
+          <div class="vd" style="color:#c0392b">✗ 确认错位：甜椒 47%</div>
+          <div class="nt" style="background:#fdecea">内容与 tomato2.jpg 相同，建议删</div>
+        </div>
+      </div>
+</div>
+
+<h2>二、商城商品图（static/img/products/）</h2>
+<div class="grid">
+      <div class="card">
+        <img src="static/img/products/citrus.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">citrus.jpg</div>
+          <div class="tt">用于：<b>赣南脐橙</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：柑橘 93.6%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/cucumber.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">cucumber.jpg</div>
+          <div class="tt">用于：<b>旱地小黄瓜</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：黄瓜 95.5%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/strawberry.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">strawberry.jpg</div>
+          <div class="tt">用于：<b>丹东红颜草莓</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：草莓 98.6%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/maize.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">maize.jpg</div>
+          <div class="tt">用于：<b>东北黑玉米</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：玉米穗 71%</div>
+          <div class="nt" style="background:#e8f5ec">对应</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/honey.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">honey.jpg</div>
+          <div class="tt">用于：<b>三峡农家土蜂蜜</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：瓶子 96%</div>
+          <div class="nt" style="background:#e8f5ec">蜂蜜瓶，合理</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/flour.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">flour.jpg</div>
+          <div class="tt">用于：<b>有机石磨全麦粉</b></div>
+          <div class="vd" style="color:#1a7f37">✓ 模型判定对应：粉末 49%</div>
+          <div class="nt" style="background:#e8f5ec">面粉，合理</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/tomato.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">tomato.jpg</div>
+          <div class="tt">用于：<b>普罗旺斯沙瓤番茄</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：甜椒 84%</div>
+          <div class="nt" style="background:#fff4e5">无番茄类，请确认</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/apple.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">apple.jpg</div>
+          <div class="tt">用于：<b>洛川红富士苹果</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：青苹果 23%</div>
+          <div class="nt" style="background:#fff4e5">请确认</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/grape.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">grape.jpg</div>
+          <div class="tt">用于：<b>阳光玫瑰葡萄</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：青苹果 86%</div>
+          <div class="nt" style="background:#fff4e5">无葡萄类，请确认是不是葡萄</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/potato.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">potato.jpg</div>
+          <div class="tt">用于：<b>高原黄心马铃薯</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：柠檬 79%</div>
+          <div class="nt" style="background:#fff4e5">无马铃薯类，请确认</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/soybean.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">soybean.jpg</div>
+          <div class="tt">用于：<b>非转基因黄豆</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：corn 34%</div>
+          <div class="nt" style="background:#fff4e5">请确认是不是黄豆</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/rice.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">rice.jpg</div>
+          <div class="tt">用于：<b>五常稻花香大米</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：木勺 73%</div>
+          <div class="nt" style="background:#fff4e5">请确认是不是大米</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/tea.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">tea.jpg</div>
+          <div class="tt">用于：<b>明前龙井绿茶</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：盘子/食物 15%</div>
+          <div class="nt" style="background:#fff4e5">请确认</div>
+        </div>
+      </div>
+      <div class="card">
+        <img src="static/img/products/pepper.jpg" loading="lazy">
+        <div class="meta">
+          <div class="fn">pepper.jpg</div>
+          <div class="tt">用于：<b>遵义朝天椒(干椒)</b></div>
+          <div class="vd" style="color:#b26a00">? 需你目视确认：钩子/小龙虾 20%/14%</div>
+          <div class="nt" style="background:#fff4e5">红色细长物，可能就是干辣椒串，请确认</div>
+        </div>
+      </div>
+</div>
+<p class="lead" style="margin-top:26px">确认方式：把需要改的图名 + 正确作物告诉我（例如「grape.jpg 其实是青苹果」），我一次性批量修正并同步到交付包。</p>
+</body></html>

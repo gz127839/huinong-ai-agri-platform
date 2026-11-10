@@ -1,0 +1,56 @@
+{% if result.ai %}
+<div class="card ai-panel" style="margin-top:18px;box-shadow:none;background:var(--green-050);border:1px solid var(--line);">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+    <h4 style="margin:0;">AI 模型识别详情</h4>
+    {% if result.ai.engine == 'onnx-mobilenetv2-transfer' %}
+      <span class="tag ok">深度模型在线</span>
+      <span class="tag" title="模型版本指纹，用于确认页面跑的是最新代码">{{ result.ai.build }}</span>
+    {% else %}
+      <span class="tag warn">已降级 · 手工特征引擎（请重启服务以加载模型）</span>
+    {% endif %}
+  </div>
+  <p class="muted small" style="margin:0 0 12px;">
+    推理链路：预处理（224×224）→ MobileNetV2 预训练主干提取 1280 维深度特征 →
+    迁移学习分类头 → 层次化作物/病害决策 → 置信度输出。
+    {% if result.ai.timing_ms %}本次推理耗时 <strong>{{ result.ai.timing_ms }} ms</strong>（纯 CPU）。{% endif %}
+  </p>
+
+  {% if result.ai.top %}
+  {% if result.ai.known is defined and not result.ai.known %}
+  <p class="muted small" style="margin:0 0 8px;color:var(--warn,#a15c00);">
+    开放集检测未通过（匹配度 {{ result.ai.ood_sim }}%），以下仅为最接近的已知类别，<strong>不构成诊断结论</strong>。</p>
+  {% endif %}
+  <table class="ai-table">
+    <thead><tr><th>排名</th><th>模型判定</th><th>作物</th><th>置信度</th></tr></thead>
+    <tbody>
+      {% for t in result.ai.top %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ t.cn }}{% if t.healthy %} <span class="tag ok">健康</span>{% endif %}</td>
+        <td>{{ t.crop_cn }}</td>
+        <td>{{ t.conf }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if result.ai.healthy is defined and result.ai.healthy_prob %}
+  <p class="muted small" style="margin:12px 0 0;">
+    健康度判定：模型判定为{% if result.ai.healthy %}健康植株{% else %}疑似感病{% endif %}，
+    健康类概率 {{ result.ai.healthy_prob }}%。
+  </p>
+  {% endif %}
+
+  {% if result.ai.heatmap %}
+  <div style="margin-top:14px;">
+    <h4 style="margin-bottom:8px;">模型关注区域（遮挡敏感度热力图）</h4>
+    <img src="{{ url_for('static', filename=result.ai.heatmap) }}" alt="模型关注区域" style="width:100%;max-width:320px;border-radius:10px;border:1px solid var(--line);">
+    <p class="muted small" style="margin:8px 0 0;">
+      方法：对图像做滑窗遮挡，记录遮挡后置信度的下降幅度。越亮的区域说明模型下判断时越依赖该处，
+      可用于人工复核模型是否"看对了地方"，而不是靠背景猜的。
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endif %}

@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+{% block title %}AI 能力实验室 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / AI 能力实验室</div>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">核心技术</span>
+      <h1>AI 能力实验室</h1>
+      <p>这里公开本平台图像识别模型的真实构成、训练数据来源、评测方法与实测准确率，
+         以及从"手工规则"升级到"深度学习迁移模型"过程中每一版做了什么、解决了什么问题、准确率提升了多少。</p>
+    </div>
+  </div>
+
+  <div class="card" style="padding:24px;margin-bottom:22px;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+      <h2 style="margin:0;">一、模型现在的真实构成</h2>
+      {% if status.ok %}<span class="tag ok">模型已加载</span>{% else %}<span class="tag warn">未加载（{{ status.error }}）</span>{% endif %} {% if status.build %}<span class="tag" title="模型版本指纹，用于确认页面跑的是最新代码">{{ status.build }}</span>{% endif %}
+    </div>
+    <div class="detail-list">
+      <div class="detail-item"><dt>主干网络</dt><dd>MobileNetV2（ImageNet 预训练权重，ONNX Runtime 推理，CPU 即可运行）</dd></div>
+      <div class="detail-item"><dt>特征维度</dt><dd>1280 维深度特征（全局平均池化层输出）</dd></div>
+      <div class="detail-item"><dt>分类头</dt><dd>在本项目数据集上训练的迁移学习分类头（标准化 + 线性层 + softmax，带类别平衡权重）</dd></div>
+      <div class="detail-item"><dt>决策方式</dt><dd>层次化：先判作物，再在该作物的病害集合内细分；推理时做 5 视角测试增强（TTA）</dd></div>
+      <div class="detail-item"><dt>输出</dt><dd>Top-3 候选 + 置信度 + 健康/感病判定 + 遮挡敏感度热力图</dd></div>
+      <div class="detail-item"><dt>可解释性</dt><dd>黑盒遮挡敏感度分析：滑窗遮挡后看置信度下降幅度，定位模型真正依赖的病斑区域</dd></div>
+      <div class="detail-item"><dt>降级策略</dt><dd>模型文件或依赖缺失时自动回退手工特征引擎，功能不中断</dd></div>
+    </div>
+  </div>
+
+  {% if bench.dataset %}
+  <div class="card" style="padding:24px;margin-bottom:22px;">
+    <h2 style="margin:0 0 12px;">二、标准答案测试集（不是"自己挑几张好图"）</h2>
+    <div class="stat-row">
+      <div class="stat-box"><b>{{ bench.dataset.images }}</b><span>图片总数</span></div>
+      <div class="stat-box"><b>{{ bench.dataset.train }}</b><span>训练集</span></div>
+      <div class="stat-box"><b>{{ bench.dataset.test }}</b><span>测试集</span></div>
+      <div class="stat-box"><b>{{ bench.dataset.classes }}</b><span>细粒度类别</span></div>
+      <div class="stat-box"><b>{{ bench.dataset.crops }}</b><span>作物种类</span></div>
+    </div>
+    <p class="muted" style="margin-top:14px;">
+      数据来自国际通用的 PlantVillage 植物叶片病害公开数据集，每张图自带类别标签，相当于"标准答案"。
+      按类别分层抽样划分为训练 / 验证 / 测试（固定随机种子 {{ bench.dataset.seed }}），
+      <strong>测试集全程不参与训练</strong>，所有准确率数字都是在测试集上跑出来的，可复现。
+    </p>
+  </div>
+  {% endif %}
+
+  {% if bench.stages %}
+  <div class="card" style="padding:24px;margin-bottom:22px;">
+    <h2 style="margin:0 0 6px;">三、四版方案的实测对比</h2>
+    <p class="muted" style="margin:0 0 16px;">同一个测试集、同一套评判标准，逐级换方法，看每一处改动到底带来了多少提升。</p>
+    <div style="overflow-x:auto;">
+      <table class="ai-table">
+        <thead>
+          <tr>
+            <th>版本</th><th>做法</th>
+            <th>作物识别</th><th>病害细分类</th><th>健康判定</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in bench.stages %}
+          <tr>
+            <td><strong>{{ s.name }}</strong></td>
+            <td style="min-width:280px;">{{ s.desc }}</td>
+            <td>{% if s.crop is not none %}{{ '%.1f'|format(s.crop*100) }}%{% else %}—{% endif %}</td>
+            <td>{% if s.fine is not none %}{{ '%.1f'|format(s.fine*100) }}%{% else %}—{% endif %}</td>
+            <td>{% if s.health is not none %}{{ '%.1f'|format(s.health*100) }}%{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if bench.gain %}
+    <p class="muted" style="margin:14px 0 0;">
+      最终版本相对项目原来的做法：<strong>作物识别准确率 +{{ '%.1f'|format(bench.gain.crop) }} 个百分点</strong>，
+      <strong>健康判定 +{{ '%.1f'|format(bench.gain.health) }} 个百分点</strong>。
+    </p>
+    {% endif %}
+    {% if bench.charts and bench.charts.ladder %}
+    <img src="{{ url_for('static', filename=bench.charts.ladder) }}" alt="准确率提升阶梯" style="width:100%;max-width:760px;margin-top:16px;border-radius:12px;border:1px solid var(--line);">
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if bench.pert and bench.pert.fine and bench.pert.fine.v3 %}
+  <div class="card" style="padding:24px;margin-bottom:22px;">
+    <h2 style="margin:0 0 6px;">四、从"实验室准确"到"田间可用"（本项目最关键的一步）</h2>
+    <p class="muted" style="margin:0 0 16px;">
+      标准数据集是实验室条件下拍的：叶片居中、光照均匀、对焦清晰。但用户真正使用手机在田里拍出来的照片，
+      往往角度歪、主体偏移、光线忽明忽暗、还可能失焦。为此我们额外构造了
+      <strong>{{ bench.dataset.perturbed }} 张田间扰动测试图</strong>
+      （随机旋转 ±28°、主体缩放至 72%~95%、亮度 0.68~1.32、对比度抖动、40% 概率高斯失焦、随机 JPEG 压缩），
+      专门用来检验模型在真实拍摄条件下的表现。
+    </p>
+    <div style="overflow-x:auto;">
+      <table class="ai-table">
+        <thead><tr><th>方案</th><th>标准图（干净测试集）</th><th>田间扰动图</th><th>退化幅度</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>V1 手工颜色特征</td>
+            <td>{{ '%.1f'|format(bench.stages[1].fine*100) }}%</td>
+            <td>{% if bench.pert.fine.v1 %}{{ '%.1f'|format(bench.pert.fine.v1*100) }}%{% else %}—{% endif %}</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>V2 迁移学习（无增强）</td>
+            <td>{{ '%.1f'|format(bench.stages[2].fine*100) }}%</td>
+            <td>{{ '%.1f'|format(bench.pert.fine.v2*100) }}%</td>
+            <td style="color:#c2564a;"><strong>-{{ '%.1f'|format(bench.gain.v2_drop) }} 个百分点</strong></td>
+          </tr>
+          <tr>
+            <td>V2 + 推理时 5 视角测试增强</td>
+            <td>{{ '%.1f'|format(bench.stages[2].fine*100) }}%</td>
+            <td>{{ '%.1f'|format(bench.pert.fine.v2_tta*100) }}%</td>
+            <td>—</td>
+          </tr>
+          <tr style="background:rgba(31,122,77,.07);">
+            <td><strong>V3 最终方案（加入训练时数据增强）</strong></td>
+            <td><strong>{{ '%.1f'|format(bench.stages[3].fine*100) }}%</strong></td>
+            <td><strong>{{ '%.1f'|format(bench.pert.fine.v3*100) }}%</strong></td>
+            <td style="color:#1f7a4d;"><strong>-{{ '%.1f'|format(bench.gain.v3_drop) }} 个百分点</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin:14px 0 0;color:var(--text-2);line-height:1.85;">
+      只在干净图上评测会<strong>高估</strong>模型能力：V2 在标准图上有 {{ '%.1f'|format(bench.stages[2].fine*100) }}%，
+      一换成田间图就掉到 {{ '%.1f'|format(bench.pert.fine.v2*100) }}%，这才是用户实际会遇到的水平。
+      针对这个问题，我们在训练阶段就主动把图片做随机旋转、缩放、改亮度、加失焦，
+      让模型"在训练时见过各种拍坏的照片"。最终田间扰动集准确率
+      <strong style="color:#1f7a4d;">从 {{ '%.1f'|format(bench.pert.fine.v2*100) }}% 提升到 {{ '%.1f'|format(bench.pert.fine.v3*100) }}%，
+      提升 {{ '%.1f'|format(bench.gain.pert) }} 个百分点</strong>，同时干净集准确率不降反升。
+    </p>
+    {% if bench.charts and bench.charts.robust %}
+    <img src="{{ url_for('static', filename=bench.charts.robust) }}" alt="田间扰动集对比" style="width:100%;max-width:760px;margin-top:16px;border-radius:12px;border:1px solid var(--line);">
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if bench.errors %}
+  <div class="card" style="padding:24px;margin-bottom:22px;">
+    <h2 style="margin:0 0 6px;">五、错误案例分析：错在哪、为什么、怎么改</h2>
+    <p class="muted" style="margin:0 0 14px;">把测试集里判错的样本全部统计出来，按"真实类别 → 误判类别"排序，定位主要错误模式。</p>
+    <div style="overflow-x:auto;">
+      <table class="ai-table">
+        <thead><tr><th>真实类别</th><th>被误判为</th><th>错判张数</th><th>原因分析</th></tr></thead>
+        <tbody>
+          {% for e in bench.errors %}
+          <tr><td>{{ e.true_cn }}</td><td>{{ e.pred_cn }}</td><td>{{ e.n }}</td><td>{{ e.reason }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if bench.charts and bench.charts.errors %}
+    <img src="{{ url_for('static', filename=bench.charts.errors) }}" alt="错误分析" style="width:100%;max-width:760px;margin-top:16px;border-radius:12px;border:1px solid var(--line);">
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if bench.fixes %}
+  <div class="card" style="padding:24px;margin-bottom:22px;">
+    <h2 style="margin:0 0 12px;">六、针对错误做的优化动作</h2>
+    <ol style="margin:0;padding-left:20px;color:var(--text-2);line-height:1.9;">
+      {% for f in bench.fixes %}<li>{{ f }}</li>{% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+
+  {% if bench.open_set %}
+  <div class="card" style="padding:24px;">
+    <h2 style="margin:0 0 12px;">七、开放集识别：让模型"知道自己不知道"</h2>
+    <p style="color:var(--text-2);line-height:1.9;margin:0 0 12px;">
+      分类模型只能在已知的 38 个类别里挑答案，遇到训练集外的作物（小麦、水稻等）会<strong>强行</strong>给出一个最像的结论——
+      我们用一张真实用户上传的水稻稻穗照片实测：旧版闭集分类器以 <strong>100.0% 置信度</strong>判成"葡萄蔓枯病"并输出了完整用药建议，
+      这在农业场景有误导用药的真实风险。
+      解决方案：为每个类别建立特征中心，推理时计算图片特征与最近中心的余弦相似度，
+      低于阈值即主动拒识，如实告知支持范围，而不是编一个答案。</p>
+    {% if bench.open_set.case %}
+    <table class="ai-table" style="max-width:720px;margin-bottom:14px;">
+      <thead><tr><th>真实案例（水稻稻穗，用户上传实测）</th><th>结果</th></tr></thead>
+      <tbody>
+        <tr><td>修复前（闭集分类）</td><td>{{ bench.open_set.case.before }}</td></tr>
+        <tr><td>修复后（开放集检测）</td><td>{{ bench.open_set.case.after }}</td></tr>
+      </tbody>
+    </table>
+    {% endif %}
+    <table class="ai-table" style="max-width:720px;">
+      <thead><tr><th>指标</th><th>数值</th></tr></thead>
+      <tbody>
+        <tr><td>拒识阈值</td><td>{{ bench.open_set.threshold }}
+          <span class="muted small">（初版 0.7317 被"茶叶鲜叶"73.8% 漏过，收紧到 0.75）</span></td></tr>
+        <tr><td>已知类误拒率</td><td>{{ bench.open_set.false_reject }} / {{ bench.open_set.test_n }}（0.26%）</td></tr>
+        <tr><td>真实域外照片核查（14 张：稻穗/果穗/果实/块茎/茶叶/油菜等）</td><td>14/14 全部正确拒识</td></tr>
+        <tr><td>已知类相似度区间</td><td>{{ bench.open_set.known_sim_range[0] }}% ~ {{ bench.open_set.known_sim_range[1] }}%</td></tr>
+        <tr><td>非收录样本相似度区间（用户稻穗实拍 / 纯色图 / 噪声实测）</td><td>{{ bench.open_set.ood_sim_range[0] }}% ~ {{ bench.open_set.ood_sim_range[1] }}%</td></tr>
+        <tr><td>安全空隙</td><td>约 20 个百分点，阈值落在空隙内</td></tr>
+      </tbody>
+    </table>
+    <p class="muted small" style="margin:10px 0 0;">
+      这一步不提高准确率，但提高了<strong>诚实度</strong>：模型从"永远给一个答案"变成"能识别自己不认识的东西"。
+      对用户而言，一句"该作物暂未收录"远比一个错误的病害诊断和用药建议有价值。</p>
+
+    {% if species.eval %}
+    <div style="margin-top:20px;padding-top:18px;border-top:1px dashed var(--line);">
+      <h3 style="margin:0 0 10px;font-size:16px;">为什么光有"相似度阈值"还不够：物种通道的可拒识改造</h3>
+      <p style="color:var(--text-2);line-height:1.9;margin:0 0 12px;">
+        上面这套阈值是在<strong>已收录作物</strong>上调出来的，对"库里根本没有的作物"几乎不设防。
+        我们实测了 {{ species.eval.neg_species | length }} 种平台未收录作物、共 {{ species.eval.neg_n }} 张田间实景照：
+        改造前有 <strong>91.2%</strong> 被强行判成库里某个作物
+        （白菜→油菜 100%、桃→苹果 96.7%、甘蔗→玉米 96.7%）——
+        这正是"喂什么图都给你配一个答案"的根源。
+        改造办法不是继续调阈值，而是让模型<strong>自己学会说"不认识"</strong>：
+        ① 把未收录作物的实景照作为第 15 类「未收录/其他」参与训练；
+        ② 1-NN 最近邻距离兜底，挡住训练集完全没见过的东西；
+        ③ 为物种通道单独微调骨干网络（MobileNetV2），让特征本身更能区分作物。</p>
+      <table class="ai-table" style="max-width:720px;">
+        <thead><tr><th>指标</th><th>改造前</th><th>改造后</th></tr></thead>
+        <tbody>
+          <tr><td>已收录作物测试集准确率</td><td>66.7%</td><td>{{ species.eval.in_scope_test_acc }}%</td></tr>
+          <tr><td>已收录作物被误拒的比例</td><td>—</td><td>{{ species.eval.in_scope_test_frr }}%</td></tr>
+          <tr><td>放行样本中的准确率</td><td>—</td><td>{{ species.eval.in_scope_acc_kept }}%</td></tr>
+          <tr><td>训练时完全未见过的作物（{{ species.eval.holdout_n }} 张 / {{ species.eval.holdout_per_species | length }} 种留出集）拒识率</td><td>18.4%</td><td>{{ species.eval.holdout_reject }}%</td></tr>
+        </tbody>
+      </table>
+      <p class="muted small" style="margin:10px 0 0;">
+        "留出集"是指：这些作物<strong>从采集到训练全程都没出现过</strong>（不是参与过训练的物种），
+        用它来检验拒识才是真实的泛化能力，比"拿训练过的物种来测"诚实得多。</p>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if bench.charts and bench.charts.cm %}
+  <div class="card" style="padding:24px;">
+    <h2 style="margin:0 0 12px;">八、实景物种识别混淆矩阵（14 类 / 留出集）</h2>
+    <img src="{{ url_for('static', filename=bench.charts.cm) }}" alt="混淆矩阵" style="width:100%;max-width:820px;border-radius:12px;border:1px solid var(--line);">
+    <p class="muted small" style="margin:10px 0 0;">行=真实作物、列=模型输出，对角线越深说明该类判得越准；非对角线的亮点就是主要混淆来源（禾本科作物与绿色小叶作物互相干扰）。</p>
+  </div>
+  {% endif %}
+
+  <div class="card" style="padding:24px;margin-top:22px;">
+    <h2 style="margin:0 0 12px;">九、能力边界：模型会什么、不会什么（如实说明）</h2>
+    <p class="muted" style="margin:0 0 14px;">
+      做农业 AI 最怕"什么图都敢给结论"。本平台把能力边界写清楚，并在产品层面做了<b>双通道 + 三层分流</b>：</p>
+    <div class="detail-list" style="margin-bottom:14px;">
+      <div class="detail-item"><dt>能做的</dt>
+        <dd>① <b>叶片病害诊断</b>：14 种作物的叶片病害图像诊断（{{ ai_model_crops }}），
+            标准测试集作物 99.0% / 病害 97.1%，田间扰动图 86.3% / 94.6%。<br>
+            ② <b>作物物种识别（实景照）</b>：在 2 511 张 iNaturalist/GBIF 研究级田间实景照片上训练的
+            物种分类通道（骨干为作物数据微调过的 MobileNetV2），覆盖知识库全部 14 种作物
+            （含叶片模型没学过的{{ kb_only | join("、") }}），田间实景留出集准确率
+            {% if species.eval %}{{ species.eval.in_scope_test_acc }}%{% else %}约 89%{% endif %}，
+            并且对<strong>未收录作物会主动拒识</strong>而不是强行配对。</dd></div>
+      <div class="detail-item"><dt>做不到的</dt>
+        <dd>病害诊断模型只在 5 万张<b>叶片</b>样本上训练，果实、籽粒、整株照片只能识别"是什么作物"，
+            给不出病害结论；物种通道对光照/背景复杂的个别种类（茶树、大豆）仍会认错，
+            所以所有实景识别结果都标注"仅供参考"，并给出置信度与匹配度。</dd></div>
+      <div class="detail-item"><dt>四层分流</dt>
+        <dd>① 叶片且在范围内 → 出病害结论 + 置信度 + 热力图；<br>
+            ② 实景照/果实照 → <b>物种识别通道</b>回答"这是什么作物"（置信度 + 原型匹配度双重门控），
+               并引导上传叶片做病害诊断；<br>
+            ③ 物种通道也没把握 → 通用视觉模型（ImageNet）认外观品类；<br>
+            ④ 仍超出范围 → 开放集拒识，同时直接给出该作物的知识库科普与防治资料，不让用户空手而归。</dd></div>
+    </div>
+    <p class="muted small" style="margin:0;">
+      这样做的原因：宁可如实说"不会"，也不能让农户拿着错误的病害结论去打药。
+      物种通道的训练数据来自 GBIF/iNaturalist 开放数据，按同样方法即可继续扩充新的作物种类。</p>
+  </div>
+
+  <div class="card" style="padding:22px 24px;">
+    <h2 style="margin:0 0 12px;">十、农业智能体：从"能问答"到"能办事"</h2>
+    <p class="muted" style="margin:0 0 14px;">
+      识别模型与知识库解决的是"看得准、查得到"，但要真正帮农户解决问题，还需要一个能
+      <b>自己规划步骤、调用工具、看结果再决定下一步</b>的智能体。</p>
+    <div style="background:#f6f8f6;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+      <code style="font-size:13px;">目标 → 规划 → 调工具 → 观察结果 → 再规划 → … → 汇总成可执行方案</code>
+      <p class="muted small" style="margin:8px 0 0;">
+        关键差别在于那条从"观察"回到"规划"的反馈回路——普通问答只有一次生成，
+        智能体会根据工具真实返回的数据不断调整下一步动作。</p>
+    </div>
+    <div class="detail-list" style="margin-bottom:14px;">
+      <div class="detail-item"><dt>工具箱</dt>
+        <dd><code>recognize_image</code> 图像识别（三通道）、<code>crop_profile</code> 作物档案、
+            <code>query_disease</code> 病害防治方案、<code>search_knowledge</code> 知识库检索、
+            <code>list_products</code> 农资价格库存——全部复用平台已有能力，不是另起炉灶。</dd></div>
+      <div class="detail-item"><dt>典型链路</dt>
+        <dd>用户上传照片并说"叶子发黄怎么办" → 智能体先调识别（认出水稻 66.6%）
+            → 据识别结果查水稻档案 → 再查水稻病害防治 → 输出症状、用药、田间整改与采购建议。
+            每一步的工具名、参数、返回与耗时都在页面上如实展示。</dd></div>
+      <div class="detail-item"><dt>规划器</dt>
+        <dd>默认走<b>云服务免密钥大模型</b>（无需申请任何 API Key，开箱可用）；
+            也可在环境变量里换成自备的 OpenAI 兼容接口。两者都不可用时由
+            <b>内置规则规划器</b>接管，按语义与识别结果自动编排工具顺序，
+            链路完全一致，断网环境也能完整演示。</dd></div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('agent') }}">去体验农业智能体 →</a>
+  </div>
+
+  <div class="card" style="padding:22px 24px;">
+    <h2 style="margin:0 0 12px;">十一、大模型集成：选型、Prompt 设计与可控性</h2>
+    <p class="muted" style="margin:0 0 14px;">
+      平台在两个场景真正用上了大模型：<b>农技问答</b>（RAG 检索增强生成）与
+      <b>农业智能体</b>（工具自主规划）。模型层统一收敛到
+      <code>llm_client.py</code> 一个模块，双通道热切换，业务代码零改动。</p>
+    <div class="detail-list" style="margin-bottom:14px;">
+      <div class="detail-item"><dt>模型选型</dt>
+        <dd>默认接入<b>腾讯混元 hunyuan-chat</b>（云服务免密钥通道，开箱可用、无需申请 Key）；
+            主模型异常时按序兜底 <code>glm-5.3-flash → deepseek-v4-flash</code>，
+            单次调用失败自动换模型，不把错误抛给用户。也支持一键换成自备的
+            DeepSeek / 通义 / 智谱等任意 OpenAI 兼容接口（3 个环境变量）。</dd></div>
+      <div class="detail-item"><dt>Prompt 设计</dt>
+        <dd>① 问答：强制"仅依据【参考资料】回答，没有就建议咨询农技站"，逐条编号拼装检索上下文；
+            ② 智能体：ReAct 协议（思考 → 行动(JSON 参数) → 观察 → finish），
+            规定"至少 2 次有效工具调用前不允许 finish"、禁止无图调用识别工具、
+            病害/药剂/剂量必须来自工具返回；③ 输出统一约束为面向农户的简体中文分条纯文本。</dd></div>
+      <div class="detail-item"><dt>输出稳定性</dt>
+        <dd>温度压低（问答 0.3 / 智能体 0.2）+ max_tokens 上限 + SSE 流式拼装 +
+            后处理清洗 Markdown 符号；接口超时、空返回、参数不兼容均有兜底链，
+            断网时问答降级为知识库原文、智能体降级为规则规划器，功能永不中断。</dd></div>
+      <div class="detail-item"><dt>安全与可控</dt>
+        <dd>答案锚定检索/工具返回数据抑制幻觉；用药建议强制附带安全间隔期与
+            "先小面积试用"提醒；每页输出结尾带"仅供参考，结合田间实际复核"免责声明；
+            拒答边界明确——知识库未收录就如实说明，不编造。</dd></div>
+      <div class="detail-item"><dt>工具集成</dt>
+        <dd>智能体工具采用「名称 + JSON Schema 参数 + 结构化返回」的统一抽象，
+            5 个工具全部复用平台真实数据，新增工具只需注册一个 dict，模型侧提示词自动更新；
+            同一批工具同时以<b>标准 MCP 服务端</b>对外开放（见下一节），
+            站内智能体与外部 AI 客户端看到的是完全一致的能力。</dd></div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('assistant') }}">去体验大模型问答 →</a>
+  </div>
+
+  <div class="card" style="padding:22px 24px;margin-top:18px;">
+    <h2 style="margin:0 0 12px;">十二、MCP 工具服务：把农业能力开放给任意 AI 客户端</h2>
+    <p class="muted" style="margin:0 0 14px;">
+      平台不只是「用」大模型，还把自身的农业能力按
+      <b>Model Context Protocol（MCP）</b> 标准对外开放。服务端
+      <code>mcp_server.py</code> 用标准库手写 JSON-RPC 2.0 与 stdio 传输，
+      <b>零第三方依赖</b>，任何支持 MCP 的客户端（Claude Desktop、WorkBuddy、Cline、自研 Agent）
+      配置后即可直接调用，无需改一行代码。</p>
+    <div class="detail-list" style="margin-bottom:14px;">
+      <div class="detail-item"><dt>协议实现</dt>
+        <dd>完整实现 <code>initialize</code>（版本协商 2025-06-18 / 2025-03-26 / 2024-11-05）、
+            <code>tools/list</code>、<code>tools/call</code>、<code>ping</code> 与
+            <code>notifications/initialized</code>；stdout 只走协议帧、日志统一写 stderr，
+            参数缺失与工具异常以 <code>isError</code> 结构化返回，不会打断会话。</dd></div>
+      <div class="detail-item"><dt>对外工具（5 个）</dt>
+        <dd><code>recognize_image</code> 图像识别（叶片病害 → 实景物种 → ImageNet 三通道级联，超范围主动拒识）、
+            <code>crop_profile</code> 作物档案、
+            <code>query_disease</code> 病害防治方案、
+            <code>search_knowledge</code> 知识库检索（RAG 召回）、
+            <code>list_products</code> 农资与农产品价格库存。</dd></div>
+      <div class="detail-item"><dt>同源实现</dt>
+        <dd>MCP 服务端与站内智能体调用的是同一份 <code>agri_agent.TOOLS</code> 函数表，
+            数据全部来自平台 SQLite 知识库与本地 ONNX 模型，
+            因此外部客户端拿到的结论与网页端逐字一致，不存在两套逻辑。</dd></div>
+      <div class="detail-item"><dt>可复现验证</dt>
+        <dd><code>python mcp_server.py --selftest</code> 一条命令跑通握手、工具枚举、真实调用；
+            <code>--tools</code> 打印工具清单；项目根目录 <code>mcp.json</code> 给出客户端配置模板。</dd></div>
+    </div>
+    <pre style="background:#0f1720;color:#c8e6c9;padding:14px 16px;border-radius:10px;overflow-x:auto;font-size:12.5px;line-height:1.7;">{
+  "mcpServers": {
+    "huinong-agri": {
+      "command": "python",
+      "args": ["&lt;项目绝对路径&gt;/mcp_server.py"],
+      "env": { "PYTHONIOENCODING": "utf-8" }
+    }
+  }
+}</pre>
+    <a class="btn btn-primary" style="margin-top:12px;" href="{{ url_for('agent') }}">看站内智能体如何调同一批工具 →</a>
+  </div>
+</div>
+{% endblock %}

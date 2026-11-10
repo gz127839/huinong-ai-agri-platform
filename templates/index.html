@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+{% block title %}慧农 AI · 智慧农业助农服务平台{% endblock %}
+
+{% block body %}
+<section class="showcase" id="showcase">
+  <div class="sc-stage">
+
+    <!-- 场景一：绿水青山 · 层叠茶园 -->
+    <div class="sc-slide is-active">
+      <svg class="sc-svg" viewBox="0 0 1440 620" preserveAspectRatio="xMidYMid slice" role="img" aria-label="绿水青山与层叠茶园梯田">
+        <defs>
+          <linearGradient id="sc-sky1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#dceff2"/><stop offset=".55" stop-color="#eef7f1"/><stop offset="1" stop-color="#f5faf6"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="620" fill="url(#sc-sky1)"/>
+        <circle cx="1140" cy="146" r="58" fill="#fff" opacity=".45"/>
+        <circle cx="1140" cy="146" r="37" fill="#fff" opacity=".92"/>
+        <g class="sc-cloud" fill="#fff" opacity=".7">
+          <ellipse cx="180" cy="132" rx="76" ry="21"/><ellipse cx="226" cy="117" rx="52" ry="17"/>
+          <ellipse cx="138" cy="122" rx="42" ry="14"/>
+          <ellipse cx="900" cy="96" rx="58" ry="16"/><ellipse cx="936" cy="86" rx="40" ry="13"/>
+        </g>
+        <path d="M0,306 C130,236 214,282 322,246 C438,207 548,280 668,238 C788,196 892,268 1012,228 C1134,187 1258,256 1372,222 C1404,212 1424,220 1440,228 L1440,620 L0,620 Z" fill="#8fbfa6"/>
+        <path d="M0,382 C158,318 286,362 428,326 C572,290 700,352 844,314 C988,276 1112,338 1256,302 C1340,281 1400,296 1440,308 L1440,620 L0,620 Z" fill="#4f9a79"/>
+        <path d="M0,448 C168,398 306,436 470,404 C634,372 780,420 946,388 C1112,356 1256,404 1400,378 C1418,375 1430,377 1440,380 L1440,620 L0,620 Z" fill="#2f7d5c"/>
+        <path d="M0,470 C264,446 528,478 792,456 C1056,434 1320,464 1440,450 L1440,506 C1320,522 1056,492 792,516 C528,540 264,508 0,534 Z" fill="#3f9170"/>
+        <path d="M0,512 C264,490 528,522 792,500 C1056,478 1320,508 1440,494 L1440,552 C1320,568 1056,538 792,562 C528,586 264,552 0,578 Z" fill="#358a68"/>
+        <path d="M0,556 C264,534 528,566 792,544 C1056,522 1320,552 1440,538 L1440,620 L0,620 Z" fill="#28755a"/>
+        <g fill="none" stroke="#8fcb9f" stroke-width="2.2" opacity=".45">
+          <path d="M0,492 C264,468 528,500 792,478 C1056,456 1320,486 1440,472"/>
+          <path d="M0,534 C264,512 528,544 792,522 C1056,500 1320,530 1440,516"/>
+        </g>
+        <path d="M0,596 C240,580 480,600 720,586 C960,572 1200,592 1440,580 L1440,620 L0,620 Z" fill="#14402e"/>
+        <g fill="#14402e">
+          <path d="M96,596 l14,-40 l14,40 Z"/><path d="M142,596 l11,-30 l11,30 Z"/>
+          <path d="M1200,596 l14,-38 l14,38 Z"/><path d="M1246,596 l11,-28 l11,28 Z"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 场景二：麦浪滚滚 -->
+    <div class="sc-slide">
+      <svg class="sc-svg" viewBox="0 0 1440 620" preserveAspectRatio="xMidYMid slice" role="img" aria-label="风吹麦浪的金色麦田">
+        <defs>
+          <linearGradient id="sc-sky2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fdf6dd"/><stop offset=".6" stop-color="#f6e9bd"/><stop offset="1" stop-color="#f1e2a8"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="620" fill="url(#sc-sky2)"/>
+        <circle cx="1150" cy="140" r="54" fill="#fff" opacity=".55"/>
+        <circle cx="1150" cy="140" r="35" fill="#fff" opacity=".9"/>
+        <g class="sc-cloud" fill="#fff" opacity=".5">
+          <ellipse cx="260" cy="110" rx="72" ry="18"/><ellipse cx="300" cy="97" rx="46" ry="14"/>
+        </g>
+        <path d="M0,352 C160,300 300,340 460,312 C620,284 760,326 920,300 C1080,274 1240,314 1440,292 L1440,620 L0,620 Z" fill="#bcc99c"/>
+        <path d="M0,404 C180,368 340,400 520,378 C700,356 860,388 1040,366 C1220,344 1360,372 1440,358 L1440,620 L0,620 Z" fill="#8fae77"/>
+        <g fill="#6f9358">
+          <path d="M120,404 l16,-46 l16,46 Z"/><path d="M172,404 l13,-36 l13,36 Z"/>
+          <path d="M980,404 l16,-42 l16,42 Z"/><path d="M1032,404 l13,-32 l13,32 Z"/>
+        </g>
+        <g class="sc-drift-slow">
+          <path d="M-360,438 q90,-26 180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 L1800,620 L-360,620 Z" fill="#e8cd7c"/>
+        </g>
+        <g class="sc-drift">
+          <path d="M-360,488 q90,-30 180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 L1800,620 L-360,620 Z" fill="#dbb958"/>
+        </g>
+        <path d="M-360,554 q90,-28 180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 L1800,620 L-360,620 Z" fill="#c8a43e"/>
+        <g stroke="#a2832a" stroke-width="2.4" opacity=".45" stroke-linecap="round" fill="none">
+          <path d="M120,600 v-24 M120,584 l-7,8 M120,584 l7,8"/>
+          <path d="M320,606 v-22 M320,592 l-7,8 M320,592 l7,8"/>
+          <path d="M560,600 v-24 M560,584 l-7,8 M560,584 l7,8"/>
+          <path d="M840,606 v-22 M840,592 l-7,8 M840,592 l7,8"/>
+          <path d="M1120,600 v-24 M1120,584 l-7,8 M1120,584 l7,8"/>
+          <path d="M1340,606 v-22 M1340,592 l-7,8 M1340,592 l7,8"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 场景三：智慧农业 -->
+    <div class="sc-slide">
+      <svg class="sc-svg" viewBox="0 0 1440 620" preserveAspectRatio="xMidYMid slice" role="img" aria-label="智慧农业：无人机巡田与智能温室">
+        <defs>
+          <linearGradient id="sc-sky3" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e4f2f8"/><stop offset="1" stop-color="#f3faf3"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="620" fill="url(#sc-sky3)"/>
+        <g stroke="#4f9a79" stroke-width="1.8" opacity=".28" fill="none">
+          <path d="M140,300 L330,246 L520,286 L700,222 L900,272"/>
+          <path d="M520,286 L640,340 L820,300"/>
+        </g>
+        <g fill="#4f9a79" opacity=".5">
+          <circle cx="140" cy="300" r="6"/><circle cx="330" cy="246" r="6"/><circle cx="520" cy="286" r="7"/>
+          <circle cx="700" cy="222" r="6"/><circle cx="900" cy="272" r="6"/><circle cx="640" cy="340" r="5"/>
+          <circle cx="820" cy="300" r="6"/>
+        </g>
+        <g class="sc-cloud" fill="#fff" opacity=".55">
+          <ellipse cx="1120" cy="300" rx="60" ry="15"/><ellipse cx="1156" cy="290" rx="38" ry="11"/>
+        </g>
+        <g class="sc-bob" transform="translate(1080,150)">
+          <ellipse cx="0" cy="36" rx="74" ry="8" fill="#174d36" opacity=".1"/>
+          <rect x="-52" y="-7" width="104" height="14" rx="7" fill="#14503a"/>
+          <rect x="-18" y="-17" width="36" height="22" rx="5" fill="#2f7d5c"/>
+          <line x1="-64" y1="-12" x2="-34" y2="-12" stroke="#14503a" stroke-width="5" stroke-linecap="round"/>
+          <line x1="34" y1="-12" x2="64" y2="-12" stroke="#14503a" stroke-width="5" stroke-linecap="round"/>
+          <ellipse cx="-64" cy="-15" rx="20" ry="3.4" fill="#8fcb9f" opacity=".85"/>
+          <ellipse cx="64" cy="-15" rx="20" ry="3.4" fill="#8fcb9f" opacity=".85"/>
+          <circle cx="0" cy="8" r="5" fill="#8fcb9f"/>
+        </g>
+        <g stroke="#8fcb9f" stroke-width="1.6" opacity=".36" fill="none">
+          <path d="M120,620 L560,406"/><path d="M300,620 L620,406"/><path d="M520,620 L690,406"/>
+          <path d="M760,620 L760,406"/><path d="M1000,620 L830,406"/><path d="M1240,620 L900,406"/>
+          <path d="M1440,620 L970,406"/>
+          <path d="M540,428 L940,428"/><path d="M486,470 L994,470"/>
+          <path d="M420,520 L1060,520"/><path d="M330,580 L1150,580"/>
+        </g>
+        <g>
+          <path d="M188,548 L188,470 Q188,424 268,424 Q348,424 348,470 L348,548 Z" fill="#fff" opacity=".93"/>
+          <g stroke="#d6eadd" stroke-width="2" fill="none">
+            <path d="M228,548 L228,438"/><path d="M268,548 L268,424"/><path d="M308,548 L308,438"/>
+            <path d="M188,506 L348,506"/>
+          </g>
+          <path d="M368,548 L368,478 Q368,436 440,436 Q512,436 512,478 L512,548 Z" fill="#fff" opacity=".87"/>
+          <g stroke="#d6eadd" stroke-width="2" fill="none">
+            <path d="M404,548 L404,448"/><path d="M440,548 L440,436"/><path d="M476,548 L476,448"/>
+            <path d="M368,510 L512,510"/>
+          </g>
+          <path d="M540,548 L540,486 Q540,448 602,448 Q664,448 664,486 L664,548 Z" fill="#fff" opacity=".81"/>
+          <g stroke="#d6eadd" stroke-width="2" fill="none">
+            <path d="M572,548 L572,458"/><path d="M602,548 L602,448"/><path d="M632,548 L632,458"/>
+            <path d="M540,516 L664,516"/>
+          </g>
+        </g>
+        <path d="M0,548 C260,532 520,558 780,542 C1040,526 1300,552 1440,540 L1440,620 L0,620 Z" fill="#7fb58f"/>
+        <path d="M0,582 C260,568 520,592 780,576 C1040,560 1300,586 1440,574 L1440,620 L0,620 Z" fill="#4f9a79"/>
+        <g stroke="#2f7d5c" stroke-width="2.4" opacity=".6" stroke-linecap="round" fill="none">
+          <path d="M90,610 v-18 M90,598 l-6,6 M90,598 l6,6"/>
+          <path d="M300,614 v-16 M300,604 l-6,6 M300,604 l6,6"/>
+          <path d="M520,610 v-18 M520,598 l-6,6 M520,598 l6,6"/>
+          <path d="M760,614 v-16 M760,604 l-6,6 M760,604 l6,6"/>
+          <path d="M1000,610 v-18 M1000,598 l-6,6 M1000,598 l6,6"/>
+          <path d="M1240,614 v-16 M1240,604 l-6,6 M1240,604 l6,6"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 场景四：丰收图景 -->
+    <div class="sc-slide">
+      <svg class="sc-svg" viewBox="0 0 1440 620" preserveAspectRatio="xMidYMid slice" role="img" aria-label="丰收图景：金色稻田、粮仓与果林">
+        <defs>
+          <linearGradient id="sc-sky4" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fdf3de"/><stop offset=".6" stop-color="#f9e9c6"/><stop offset="1" stop-color="#f3dfb2"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="620" fill="url(#sc-sky4)"/>
+        <circle cx="1120" cy="130" r="52" fill="#fff" opacity=".5"/>
+        <circle cx="1120" cy="130" r="34" fill="#fff" opacity=".88"/>
+        <g class="sc-cloud" fill="#fff" opacity=".45">
+          <ellipse cx="300" cy="104" rx="68" ry="17"/><ellipse cx="338" cy="94" rx="44" ry="13"/>
+          <ellipse cx="980" cy="152" rx="54" ry="15"/>
+        </g>
+        <path d="M0,340 C170,286 320,324 490,296 C660,268 810,308 980,282 C1150,256 1310,292 1440,272 L1440,620 L0,620 Z" fill="#c6b28c"/>
+        <path d="M0,402 C180,370 340,398 520,378 C700,358 860,388 1040,368 C1220,348 1360,374 1440,362 L1440,620 L0,620 Z" fill="#8aa96e"/>
+        <g>
+          <ellipse cx="620" cy="384" rx="36" ry="27" fill="#5f8f4e"/><rect x="616" y="384" width="8" height="24" fill="#6b5340"/>
+          <ellipse cx="760" cy="378" rx="30" ry="23" fill="#6b9c58"/><rect x="756" y="378" width="8" height="22" fill="#6b5340"/>
+          <ellipse cx="880" cy="374" rx="26" ry="20" fill="#5f8f4e"/><rect x="876" y="374" width="8" height="20" fill="#6b5340"/>
+        </g>
+        <g fill="#d2593f" opacity=".9">
+          <circle cx="606" cy="378" r="4"/><circle cx="634" cy="390" r="4"/><circle cx="620" cy="398" r="4"/>
+          <circle cx="748" cy="372" r="3.6"/><circle cx="772" cy="382" r="3.6"/>
+          <circle cx="870" cy="368" r="3.4"/><circle cx="890" cy="378" r="3.4"/>
+        </g>
+        <path d="M0,444 C264,424 528,452 792,432 C1056,412 1320,438 1440,426 L1440,620 L0,620 Z" fill="#d8b668"/>
+        <g class="sc-drift-slow">
+          <path d="M-360,478 q90,-26 180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 L1800,620 L-360,620 Z" fill="#c9a94f"/>
+        </g>
+        <g class="sc-drift">
+          <path d="M-360,528 q90,-28 180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 t180,0 L1800,620 L-360,620 Z" fill="#bd9a3c"/>
+        </g>
+        <g>
+          <path d="M980,556 L980,430 Q980,398 1046,398 Q1112,398 1112,430 L1112,556 Z" fill="#e6c47e"/>
+          <path d="M980,430 Q980,398 1046,398 Q1112,398 1112,430" fill="#d3ab5f"/>
+          <rect x="974" y="424" width="144" height="7" rx="3.5" fill="#c99f52"/>
+          <rect x="974" y="486" width="144" height="7" rx="3.5" fill="#c99f52"/>
+          <path d="M1012,556 L1012,486 L1080,486 L1080,556 Z" fill="#b98a45"/>
+          <path d="M1128,556 L1128,458 Q1128,432 1180,432 Q1232,432 1232,458 L1232,556 Z" fill="#e0bd76"/>
+          <path d="M1128,458 Q1128,432 1180,432 Q1232,432 1232,458" fill="#cda55b"/>
+          <rect x="1123" y="452" width="114" height="6" rx="3" fill="#c69c50"/>
+          <path d="M1152,556 L1152,506 L1208,506 L1208,556 Z" fill="#b5853f"/>
+        </g>
+        <path d="M0,584 C260,570 520,594 780,578 C1040,562 1300,588 1440,576 L1440,620 L0,620 Z" fill="#9d7f2e"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="sc-veil"></div>
+
+  <div class="sc-body">
+    <span class="sc-eyebrow" id="scEyebrow">
+      <svg><use href="#i-leaf" id="scEyeIcon"></use></svg><span id="scEyeText">绿水青山 · 生态优先</span>
+    </span>
+    <h1 class="sc-title">一部手机，解决种什么、怎么种、怎么卖</h1>
+    <p class="sc-sub">慧农 AI 把作物识别、病虫害诊断、农技科普和农产品展销放在同一个平台里，农户拍照即可识别作物与病害，
+       照着防治方案下地干活，产出的农产品直接上架展销，形成从种植到销售的完整服务闭环。</p>
+
+    <div class="sc-policy">
+      <div class="pl-mark"><svg><use href="#i-shield"></use></svg></div>
+      <div class="pl-text" id="scPolicy">
+        <b>绿水青山就是金山银山</b>
+        <span>坚持生态优先、绿色发展，让良好生态成为乡村振兴的重要支撑</span>
+      </div>
+    </div>
+
+    <div class="sc-actions">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('crop_recognize') }}">
+        <svg><use href="#i-camera"></use></svg>拍照识别作物
+      </a>
+      <a class="btn btn-outline btn-lg" href="{{ url_for('disease_recognize') }}">
+        <svg><use href="#i-bug"></use></svg>病虫害诊断
+      </a>
+    </div>
+
+    <div class="sc-stats">
+      <div><strong>{{ stats.crops }}</strong><span>作物科普条目</span></div>
+      <div><strong>{{ stats.diseases }}</strong><span>病虫害防治方案</span></div>
+      <div><strong>{{ stats.products }}</strong><span>在售农产品</span></div>
+      <div><strong>{{ stats.scans }}</strong><span>累计识别次数</span></div>
+    </div>
+  </div>
+
+  <div class="sc-dots" id="scDots">
+    <button class="sc-dot is-active" type="button" data-i="0" aria-label="绿水青山"><span></span></button>
+    <button class="sc-dot" type="button" data-i="1" aria-label="麦浪滚滚"><span></span></button>
+    <button class="sc-dot" type="button" data-i="2" aria-label="智慧农业"><span></span></button>
+    <button class="sc-dot" type="button" data-i="3" aria-label="丰收图景"><span></span></button>
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">核心能力</span>
+      <h2>三项完整功能，覆盖农业生产全链条</h2>
+      <p>电脑端上传图片、手机端直接调用摄像头拍照，同一个地址自适应所有设备</p>
+    </div>
+  </div>
+  <div class="grid grid-3">
+    <div class="card card-hover feature-card">
+      <div class="feature-icon"><svg><use href="#i-leaf"></use></svg></div>
+      <div>
+        <h3>农作物智能识别</h3>
+        <p>拍照即可识别作物种类，同步给出适种区域、种植季节、生长习性和栽培管理要点。</p>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('crop_recognize') }}">开始识别</a>
+      </div>
+    </div>
+    <div class="card card-hover feature-card">
+      <div class="feature-icon"><svg><use href="#i-bug"></use></svg></div>
+      <div>
+        <h3>病虫害智能诊断</h3>
+        <p>识别发病特征后输出物理防治、用药建议、田间整改和后期预防的完整落地方案。</p>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('disease_recognize') }}">开始诊断</a>
+      </div>
+    </div>
+    <div class="card card-hover feature-card">
+      <div class="feature-icon"><svg><use href="#i-basket"></use></svg></div>
+      <div>
+        <h3>农产品助农展销</h3>
+        <p>商品展示、分类浏览、采购清单、农户上架与咨询留言，帮农产品多找一条销路。</p>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('shop') }}">进入商城</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">使用流程</span>
+      <h2>四步完成一次完整的助农服务</h2>
+    </div>
+  </div>
+  <div class="grid steps">
+    <div class="card step"><div class="no">1</div><h4>拍照上传</h4><p class="muted">手机端直接调用摄像头拍摄，PC 端拖拽或选择本地图片。</p></div>
+    <div class="card step"><div class="no">2</div><h4>AI 识别</h4><p class="muted">系统比对知识库特征，给出识别结果与置信度参考。</p></div>
+    <div class="card step"><div class="no">3</div><h4>照方管理</h4><p class="muted">按平台给出的防治与栽培方案进行田间作业。</p></div>
+    <div class="card step"><div class="no">4</div><h4>上架销售</h4><p class="muted">收获后自行上架商品，采购方留言咨询，线下完成交易。</p></div>
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">农技知识库</span>
+      <h2>作物科普随手查</h2>
+      <p>识别之外也能直接浏览，按作物分类查询对应的常见病害</p>
+    </div>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('knowledge') }}">查看全部</a>
+  </div>
+  <div class="grid grid-4">
+    {% for c in crops %}
+    <a class="card card-hover item-card" href="{{ url_for('crop_detail', slug=c.slug) }}">
+      <div class="item-thumb">{% if c.image %}<img src="{{ asset(c.image) }}" alt="{{ c.name }}" loading="lazy">{% else %}<svg><use href="#i-{{ c.icon }}"></use></svg>{% endif %}</div>
+      <span class="tag">{{ c.category }}</span>
+      <div class="product-name">{{ c.name }}</div>
+      <p class="muted" style="margin:0;font-size:13px;">{{ c.intro[:42] }}…</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">病虫害库</span>
+      <h2>常见病害与防治方案</h2>
+    </div>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('knowledge', tab='disease') }}">查看全部</a>
+  </div>
+  <div class="grid grid-3">
+    {% for d in diseases %}
+    <a class="card card-hover item-card" href="{{ url_for('disease_detail', slug=d.slug) }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="margin:0;">{{ d.name }}</h3>
+        <span class="tag gray">{{ d.crop_name or '通用' }}</span>
+      </div>
+      <span class="tag warn">{{ d.dtype }}</span>
+      <p class="muted" style="margin:0;font-size:13px;">{{ d.symptoms[:56] }}…</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">助农展销</span>
+      <h2>产地直供农产品</h2>
+      <p>由合作农户与合作社直接供货，平台只做展示与撮合，不设复杂支付流程</p>
+    </div>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('shop') }}">进入商城</a>
+  </div>
+  <div class="grid grid-4">
+    {% for p in products %}
+    <div class="card card-hover product-card">
+      <a href="{{ url_for('product_detail', pid=p.id) }}">
+        {% set pimg = product_image(p.name, p.image) %}
+        <div class="item-thumb">{% if pimg %}<img src="{{ asset(pimg) }}" alt="{{ p.name }}" loading="lazy">{% else %}<svg><use href="#i-{{ p.icon }}"></use></svg>{% endif %}</div>
+        <div class="product-name">{{ p.name }}</div>
+        <p class="muted" style="margin:2px 0 8px;font-size:13px;">产地：{{ p.origin }}</p>
+        <div class="price">¥{{ '%.2f'|format(p.price) }} <small>/ {{ p.unit }}</small></div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section container">
+  <div class="card" style="background:linear-gradient(120deg,#eef6f0,#e3f1e8);box-shadow:none;">
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:space-between;">
+      <div style="max-width:620px;">
+        <h2 style="margin-bottom:8px;">家里有农产品卖不出去？</h2>
+        <p class="muted" style="margin:0;">注册成为农户，填写商品名称、产地和价格即可提交上架，审核通过后出现在商城页面，
+           采购方可以直接留言咨询，全程免费。</p>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('sell') }}"><svg><use href="#i-upload"></use></svg>我要上架</a>
+        <a class="btn btn-outline btn-lg" href="{{ url_for('shop') }}">去看看货</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

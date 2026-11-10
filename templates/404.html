@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}页面不存在 · 慧农 AI{% endblock %}
+{% block body %}
+<div class="container">
+  <div class="card empty" style="margin-top:60px;padding:70px 20px;">
+    <svg><use href="#i-leaf"></use></svg>
+    <h2 style="margin-bottom:8px;">页面走丢了</h2>
+    <p>您访问的地址不存在，可能是链接已失效</p>
+    <a class="btn btn-primary" style="margin-top:12px;" href="{{ url_for('index') }}">返回首页</a>
+  </div>
+</div>
+{% endblock %}

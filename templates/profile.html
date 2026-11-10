@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}个人中心 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / 个人中心</div>
+
+  <div class="card" style="padding:26px;margin-bottom:20px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+    <div class="feature-icon" style="width:56px;height:56px;"><svg style="width:28px;height:28px;"><use href="#i-user"></use></svg></div>
+    <div style="flex:1;min-width:220px;">
+      <h1 style="margin:0 0 4px;font-size:24px;">{{ user.username }}
+        {% if user.role=='admin' %}<span class="tag">平台管理员</span>{% else %}<span class="tag gray">农户 / 采购方</span>{% endif %}</h1>
+      <p class="muted" style="margin:0;">{{ user.village or '未填写所在地' }} · {{ user.phone or '未填写电话' }} · 注册于 {{ user.created_at }}</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a class="btn btn-primary" href="{{ url_for('sell') }}"><svg><use href="#i-upload"></use></svg>上架商品</a>
+      {% if user.role=='admin' %}<a class="btn btn-outline" href="{{ url_for('admin') }}">后台管理</a>{% endif %}
+      <a class="btn btn-outline" href="{{ url_for('logout') }}">退出登录</a>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <a class="chip {% if tab=='home' %}active{% endif %}" href="{{ url_for('profile', tab='home') }}">概览</a>
+    <a class="chip {% if tab=='history' %}active{% endif %}" href="{{ url_for('profile', tab='history') }}">识别记录</a>
+    <a class="chip {% if tab=='orders' %}active{% endif %}" href="{{ url_for('profile', tab='orders') }}">我的需求单</a>
+    <a class="chip {% if tab=='products' %}active{% endif %}" href="{{ url_for('profile', tab='products') }}">我上架的商品</a>
+    <a class="chip {% if tab=='messages' %}active{% endif %}" href="{{ url_for('profile', tab='messages') }}">我的咨询留言</a>
+  </div>
+
+  {% if tab=='home' %}
+  <div class="grid grid-4">
+    <div class="card stat-card"><div class="num">{{ history|length }}</div><div class="label">识别记录</div></div>
+    <div class="card stat-card"><div class="num">{{ orders|length }}</div><div class="label">采购需求单</div></div>
+    <div class="card stat-card"><div class="num">{{ products|length }}</div><div class="label">上架商品</div></div>
+    <div class="card stat-card"><div class="num">{{ messages|length }}</div><div class="label">咨询留言</div></div>
+  </div>
+  <div class="grid grid-2" style="margin-top:20px;align-items:start;">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">快捷入口</h3>
+      <div class="alt-list">
+        <a href="{{ url_for('crop_recognize') }}">AI 作物识别</a>
+        <a href="{{ url_for('disease_recognize') }}">AI 病虫害诊断</a>
+        <a href="{{ url_for('knowledge') }}">农技知识库</a>
+        <a href="{{ url_for('shop') }}">农产品商城</a>
+        <a href="{{ url_for('cart') }}">采购清单</a>
+        <a href="{{ url_for('sell') }}">农户上架</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:14px;">最近识别</h3>
+      {% if history %}
+      <div class="detail-list">
+        {% for h in history[:5] %}
+        <div class="detail-item"><dt>{{ '作物' if h.kind=='crop' else '病害' }} · {{ h.created_at }}</dt>
+          <dd>{{ h.result_name }}（置信度 {{ h.confidence }}%）</dd></div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted" style="margin:0;">还没有识别记录，去拍一张试试</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% elif tab=='history' %}
+  <div class="card">
+    {% if history %}
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
+      {% for h in history %}
+      <div class="card" style="box-shadow:none;background:var(--green-050);padding:14px;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <img src="{{ h.image }}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;">
+          <div>
+            <div style="font-weight:700;">{{ h.result_name }}</div>
+            <div class="muted small">{{ '作物识别' if h.kind=='crop' else '病虫害诊断' }} · {{ h.confidence }}%</div>
+            <div class="muted small">{{ h.created_at }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><svg><use href="#i-camera"></use></svg><p>暂无识别记录</p></div>
+    {% endif %}
+  </div>
+
+  {% elif tab=='orders' %}
+  <div class="card">
+    {% if orders %}
+    <div class="table-wrap"><table class="table">
+      <tr><th>单号</th><th>联系人</th><th>金额</th><th>商品</th><th>状态</th><th>时间</th></tr>
+      {% for o in orders %}
+      <tr>
+        <td>{{ o.order_no }}</td><td>{{ o.buyer }} {{ o.phone }}</td>
+        <td>¥{{ '%.2f'|format(o.total) }}</td>
+        <td style="max-width:320px;color:var(--text-2);">{{ o.items }}</td>
+        <td><span class="tag ok">{{ o.status }}</span></td>
+        <td class="muted">{{ o.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </table></div>
+    {% else %}
+    <div class="empty"><svg><use href="#i-truck"></use></svg><p>还没有提交采购需求单</p></div>
+    {% endif %}
+  </div>
+
+  {% elif tab=='products' %}
+  <div class="card">
+    {% if products %}
+    <div class="table-wrap"><table class="table">
+      <tr><th>商品</th><th>分类</th><th>价格</th><th>库存</th><th>状态</th><th>提交时间</th></tr>
+      {% for p in products %}
+      <tr>
+        <td>{{ p.name }}</td><td>{{ p.category }}</td>
+        <td>¥{{ '%.2f'|format(p.price) }}/{{ p.unit }}</td><td>{{ p.stock }}</td>
+        <td>{% if p.status=='approved' %}<span class="tag ok">已上架</span>{% elif p.status=='pending' %}<span class="tag warn">审核中</span>{% else %}<span class="tag gray">未通过</span>{% endif %}</td>
+        <td class="muted">{{ p.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </table></div>
+    {% else %}
+    <div class="empty"><svg><use href="#i-basket"></use></svg><p>还没有上架商品，<a href="{{ url_for('sell') }}" style="color:var(--green-700);">去上架</a></p></div>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <div class="card">
+    {% if messages %}
+    <div class="detail-list">
+      {% for m in messages %}
+      <div class="card" style="box-shadow:none;background:var(--green-050);padding:14px;">
+        <p class="small muted" style="margin:0 0 4px;">{{ m.product_name or '平台咨询' }} · {{ m.created_at }}</p>
+        <p style="margin:0 0 6px;">{{ m.content }}</p>
+        {% if m.reply %}<p style="margin:0;color:var(--green-700);font-size:14px;">农户回复：{{ m.reply }}</p>
+        {% else %}<p class="muted small" style="margin:0;">等待回复中</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><svg><use href="#i-phone"></use></svg><p>还没有咨询留言</p></div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}农产品商城 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / 农产品商城</div>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">功能三</span>
+      <h1>农产品助农展销</h1>
+      <p>产地直供、农户自销。平台只做展示与撮合，看中后可加入采购清单并留言，由农户直接联系确认，不设复杂支付流程。</p>
+    </div>
+    <a class="btn btn-primary btn-sm" href="{{ url_for('sell') }}"><svg><use href="#i-upload"></use></svg>农户上架</a>
+  </div>
+
+  <form class="card" method="get" action="{{ url_for('shop') }}" style="margin-bottom:18px;">
+    <div class="search-bar">
+      <svg class="ic" style="color:var(--muted);"><use href="#i-search"></use></svg>
+      <input class="input" type="text" name="kw" value="{{ kw }}" placeholder="搜索商品名称或产地，如 苹果、洛川">
+      <select class="input" name="sort" style="max-width:150px;">
+        <option value="new" {% if sort=='new' %}selected{% endif %}>最新上架</option>
+        <option value="price" {% if sort=='price' %}selected{% endif %}>价格从低到高</option>
+        <option value="hot" {% if sort=='hot' %}selected{% endif %}>库存充足</option>
+      </select>
+      <button class="btn btn-primary" type="submit">搜索</button>
+    </div>
+  </form>
+
+  <div class="filter-bar">
+    <a class="chip {% if not cat %}active{% endif %}" href="{{ url_for('shop', sort=sort, kw=kw) }}">全部</a>
+    {% for c in categories %}
+    <a class="chip {% if cat==c %}active{% endif %}" href="{{ url_for('shop', cat=c, sort=sort, kw=kw) }}">{{ c }}</a>
+    {% endfor %}
+  </div>
+
+  {% if products %}
+  <div class="grid grid-4">
+    {% for p in products %}
+    <div class="card card-hover product-card">
+      <a href="{{ url_for('product_detail', pid=p.id) }}">
+        {% set pimg = product_image(p.name, p.image) %}
+        <div class="item-thumb">{% if pimg %}<img src="{{ asset(pimg) }}" alt="{{ p.name }}" loading="lazy">{% else %}<svg><use href="#i-{{ p.icon }}"></use></svg>{% endif %}</div>
+        <div class="product-name">{{ p.name }}</div>
+        <p class="muted" style="margin:2px 0 6px;font-size:13px;">产地：{{ p.origin }} · 供货：{{ p.farmer_name }}</p>
+        <div class="price">¥{{ '%.2f'|format(p.price) }} <small>/ {{ p.unit }}</small></div>
+      </a>
+      <p class="muted small" style="margin:8px 0 12px;">{{ p.description[:44] }}…</p>
+      <form method="post" action="{{ url_for('cart_add') }}" style="margin-top:auto;">
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <input type="hidden" name="qty" value="1">
+        <button class="btn btn-outline btn-sm btn-block" type="submit"><svg><use href="#i-cart"></use></svg>加入采购清单</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card empty"><svg><use href="#i-basket"></use></svg><p>暂无符合条件的商品</p></div>
+  {% endif %}
+
+  <div class="card" style="margin-top:26px;background:var(--green-050);box-shadow:none;">
+    <div style="display:flex;gap:16px;align-items:flex-start;">
+      <div class="feature-icon"><svg><use href="#i-phone"></use></svg></div>
+      <div>
+        <h3 style="margin-bottom:6px;">关于交易的说明</h3>
+        <p class="muted" style="margin:0;">本平台定位为助农展销与信息撮合：加入采购清单后填写联系方式提交需求，
+           平台会把需求推送给对应农户，双方电话确认规格、运费与付款方式后线下完成交易，
+           平台不代收货款、不介入支付环节。</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

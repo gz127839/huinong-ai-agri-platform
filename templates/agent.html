@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}农业智能体 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / 农业智能体</div>
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">Agent · 规划 → 调工具 → 观察 → 汇总</span>
+      <h1>农业智能体</h1>
+      <p>不只是"问一句答一句"。给它一个目标，它会自己决定先查什么、再查什么，
+        每一步都把工具返回的结果拿回来重新判断，直到能给出一套可执行的方案。</p>
+    </div>
+  </div>
+
+  {% if llm_enabled %}
+  <div class="card" style="padding:14px 18px;margin-bottom:18px;border-left:4px solid #3f9e5a;">
+    <strong>已接入大模型：{{ llm_model }}
+      <span class="tag ok" style="margin-left:6px;">{{ llm_label }}</span>
+      <span class="tag gray" style="margin-left:6px;">Function Calling 式工具规划</span></strong>
+    <p class="muted" style="margin:6px 0 0;font-size:13px;">
+      智能体由大模型自主规划：每轮输出「思考 → 行动(工具, 参数JSON)」，平台执行工具后把真实结果
+      回填给模型继续推理，直到模型主动 <code>finish</code>。同一批工具还以
+      <b>标准 MCP 服务端</b>（<code>mcp_server.py</code>）对外开放，外部 MCP 客户端可直接调用，
+      站内智能体与外部 Agent 用的是同一份工具实现。生成内容统一清洗为纯文本，并强制锚定工具返回数据，输出稳定可控。</p>
+  </div>
+  {% else %}
+  <div class="card" style="padding:16px 20px;margin-bottom:18px;border-left:4px solid #d9a441;">
+    <strong>当前为「规则规划器」模式（无大模型接口时自动降级）</strong>
+    <p class="muted" style="margin:6px 0 0;font-size:13px;">
+      大模型通道暂不可用（云服务未连通，且未配置自备 Key），
+      智能体改用内置规则规划器：按问题语义自动编排工具调用顺序，链路与有大模型时完全一致。
+      配置任意 OpenAI 兼容接口后重启，即切换为由大模型自主规划。</p>
+  </div>
+  {% endif %}
+
+  <div class="card" style="padding:18px 20px;margin-bottom:18px;">
+    <strong style="font-size:14px;">智能体可调用的工具（{{ tools|length }} 个）</strong>
+    <div class="grid grid-3" style="margin-top:12px;">
+      {% for t in tools %}
+      <div style="border:1px solid var(--line);border-radius:10px;padding:12px 14px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <code style="font-size:13px;color:var(--green-700);">{{ t.name }}</code>
+          <span class="tag gray">{{ t.args|join(', ') }}</span>
+        </div>
+        <p class="muted small" style="margin:6px 0 0;">{{ t.desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <form class="card" method="post" action="{{ url_for('agent') }}" enctype="multipart/form-data"
+        style="margin-bottom:22px;">
+    <div class="search-bar">
+      <svg class="ic" style="color:var(--muted);"><use href="#i-search"></use></svg>
+      <input class="input" type="text" name="question" value="{{ question }}"
+             placeholder="说出你的目标，如：我这番茄叶子发黄还长褐色轮纹斑，该怎么办？">
+      <button class="btn btn-primary" type="submit">交给智能体</button>
+    </div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <input type="file" name="image" accept="image/*" style="font-size:13px;">
+      <span class="muted small">可选：同时上传一张照片，智能体会自动先调用识别工具看图</span>
+    </div>
+  </form>
+
+  {% if result %}
+  <div class="card" style="padding:16px 20px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
+    <span class="tag {{ 'ok' if result.mode == 'llm' else 'warn' }}">
+      {{ '大模型自主规划' if result.mode == 'llm' else '内置规则规划器' }}{% if result.mode == 'llm' and llm_model %} · {{ llm_model }}{% endif %}</span>
+    <span class="muted small">执行 {{ result.steps|length }} 步 ·
+      调用工具 {{ result.tools_used|length }} 个 · 耗时 {{ result.elapsed_ms }} ms</span>
+    {% if result.tools_used %}
+    <span class="muted small">链路：{{ result.tools_used | join(' → ') }}</span>
+    {% endif %}
+  </div>
+
+  {% if image %}
+  <div class="card" style="padding:14px 18px;margin-bottom:16px;display:flex;gap:16px;align-items:center;">
+    <img src="{{ image }}" alt="上传图片" style="width:120px;height:90px;object-fit:cover;border-radius:8px;">
+    <div>
+      <strong style="font-size:14px;">智能体看到的照片</strong>
+      <p class="muted small" style="margin:4px 0 0;">第 1 步会把它交给图像识别工具处理</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <h2 style="font-size:18px;margin:22px 0 12px;">执行轨迹（每一步都真实发生）</h2>
+  {% for s in result.steps %}
+  <div class="card" style="padding:14px 18px;margin-bottom:10px;border-left:3px solid {{ '#3f9e5a' if s.ok else '#c0563f' }};">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <strong style="font-size:14px;">第 {{ s.n }} 步{% if s.tool %} · 调用 <code>{{ s.tool }}</code>{% endif %}</strong>
+      <span class="muted small">{{ s.ms }} ms</span>
+    </div>
+    {% if s.thought %}<p class="muted" style="margin:6px 0 0;font-size:13px;">💭 {{ s.thought }}</p>{% endif %}
+    {% if s.args %}<p class="muted small" style="margin:4px 0 0;">参数：<code>{{ s.args }}</code></p>{% endif %}
+    <div style="margin-top:8px;padding:10px 12px;background:#f6f8f6;border-radius:8px;">
+      <span class="muted small">观察结果：</span>
+      <div class="muted small" style="margin-top:6px;white-space:pre-wrap;">{{ s.obs_text or s.obs }}</div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <h2 style="font-size:18px;margin:22px 0 12px;">最终建议</h2>
+  <div class="card" style="padding:22px 24px;margin-bottom:18px;">
+    <span class="tag ok">基于 {{ result.tools_used|length }} 次真实工具调用生成</span>
+    <div style="margin-top:10px;line-height:1.9;white-space:pre-wrap;">{{ result.answer }}</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

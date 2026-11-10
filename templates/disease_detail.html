@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ d.name }} · 防治方案 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / <a href="{{ url_for('knowledge', tab='disease') }}">病虫害库</a> / {{ d.name }}</div>
+
+  <div class="card" style="padding:28px;margin-bottom:22px;">
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+      <div class="feature-icon" style="width:56px;height:56px;"><svg style="width:28px;height:28px;"><use href="#i-bug"></use></svg></div>
+      <div style="flex:1;min-width:240px;">
+        <h1 style="margin-bottom:6px;">{{ d.name }} <span class="tag warn">{{ d.dtype }}</span></h1>
+        <p class="muted" style="margin:0;">寄主作物：
+          {% if d.crop_slug %}<a href="{{ url_for('crop_detail', slug=d.crop_slug) }}" style="color:var(--green-700);">{{ d.crop_name }}</a>{% else %}{{ d.crop_name or '通用' }}{% endif %}
+        </p>
+      </div>
+      <a class="btn btn-primary" href="{{ url_for('disease_recognize') }}"><svg><use href="#i-camera"></use></svg>拍照诊断</a>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start;">
+    <div class="card">
+      <h2 style="font-size:20px;">病害识别信息</h2>
+      <div class="detail-list">
+        <div class="detail-item"><dt>发病特征</dt><dd>{{ d.symptoms }}</dd></div>
+        <div class="detail-item"><dt>发病诱因</dt><dd>{{ d.cause }}</dd></div>
+        <div class="detail-item"><dt>高发时间段</dt><dd>{{ d.peak }}</dd></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px;">物理防治手段</h2>
+      <div class="detail-list">
+        <div class="detail-item"><dt>农业与物理防治</dt><dd>{{ d.physical }}</dd></div>
+      </div>
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);">
+        <h2 style="font-size:20px;">合理用药建议</h2>
+        <div class="detail-list">
+          <div class="detail-item"><dt>药剂方案</dt><dd>{{ d.chemical }}</dd></div>
+        </div>
+        <p class="muted small" style="margin-top:10px;">严格遵守农药标签登记的作物范围、使用剂量与安全间隔期，
+           同一作用机理的药剂每季使用不超过 2~3 次，注意轮换用药。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start;margin-top:20px;">
+    <div class="card">
+      <h2 style="font-size:20px;">田间整改管理</h2>
+      <div class="detail-list"><div class="detail-item"><dt>整改要点</dt><dd>{{ d.field_mgmt }}</dd></div></div>
+    </div>
+    <div class="card">
+      <h2 style="font-size:20px;">后期预防措施</h2>
+      <div class="detail-list"><div class="detail-item"><dt>预防措施</dt><dd>{{ d.prevention }}</dd></div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

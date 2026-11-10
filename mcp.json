@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "huinong-agri": {
+      "command": "python",
+      "args": [
+        "D:/慧农AI智慧农业平台/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUTF8": "1"
+      }
+    }
+  }
+}

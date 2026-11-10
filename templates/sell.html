@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}农户上架商品 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width:760px;">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / <a href="{{ url_for('profile') }}">个人中心</a> / 农户上架</div>
+  <div class="section-head"><div>
+    <span class="eyebrow">助农上架</span>
+    <h1 style="margin:0;">农户简易上架商品</h1>
+    <p>填写商品的基本信息即可提交，平台审核通过后出现在农产品商城，采购方可直接留言咨询</p>
+  </div></div>
+
+  <div class="card" style="padding:26px;">
+    <form method="post" action="{{ url_for('sell') }}">
+      <div class="field" style="margin-bottom:14px;">
+        <label>商品名称</label>
+        <input class="input" name="name" placeholder="如：洛川红富士苹果（80mm）" required>
+      </div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="field"><label>商品分类</label>
+          <select class="input" name="category">
+            {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field"><label>产地</label><input class="input" name="origin" placeholder="如：陕西洛川" required></div>
+      </div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="field"><label>单价（元）</label><input class="input" type="number" step="0.01" name="price" placeholder="如：9.9" required></div>
+        <div class="field"><label>计价单位</label><input class="input" name="unit" value="斤"></div>
+      </div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="field"><label>可售数量</label><input class="input" type="number" name="stock" value="100"></div>
+        <div class="field"><label>供货方名称</label><input class="input" name="farmer_name" placeholder="如：王家屯合作社"></div>
+      </div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>商品介绍</label>
+        <textarea class="input" name="description" placeholder="介绍品种、规格、成熟时间、包装与运输方式等，信息越详细越容易成交"></textarea>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" style="margin-top:20px;" type="submit">
+        <svg><use href="#i-upload"></use></svg>提交审核
+      </button>
+    </form>
+  </div>
+
+  <div class="card" style="margin-top:18px;background:var(--green-050);box-shadow:none;">
+    <h4 style="margin-bottom:8px;">上架须知</h4>
+    <ul style="margin:0;padding-left:20px;color:var(--text-2);font-size:14px;">
+      <li>商品信息需真实，产地与规格不得虚标。</li>
+      <li>提交后进入待审核状态，管理员审核通过即展示在商城。</li>
+      <li>交易由供需双方自行联系确认，平台不收取佣金、不代收货款。</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

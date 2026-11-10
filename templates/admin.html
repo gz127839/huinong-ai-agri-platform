@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}后台管理 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / 后台管理</div>
+  <div class="section-head">
+    <div><span class="eyebrow">平台管理</span><h1 style="margin:0;">简易后台管理</h1>
+      <p>审核农户上架商品、回复咨询留言、跟踪需求单与平台使用数据</p></div>
+  </div>
+
+  <div class="tabs">
+    <a class="chip {% if tab=='overview' %}active{% endif %}" href="{{ url_for('admin', tab='overview') }}">数据概览</a>
+    <a class="chip {% if tab=='products' %}active{% endif %}" href="{{ url_for('admin', tab='products') }}">商品审核{% if stats.pending %}<span class="badge" style="margin-left:6px;">{{ stats.pending }}</span>{% endif %}</a>
+    <a class="chip {% if tab=='orders' %}active{% endif %}" href="{{ url_for('admin', tab='orders') }}">需求单</a>
+    <a class="chip {% if tab=='messages' %}active{% endif %}" href="{{ url_for('admin', tab='messages') }}">咨询留言</a>
+    <a class="chip {% if tab=='users' %}active{% endif %}" href="{{ url_for('admin', tab='users') }}">用户</a>
+    <a class="chip {% if tab=='history' %}active{% endif %}" href="{{ url_for('admin', tab='history') }}">识别记录</a>
+  </div>
+
+  {% if tab=='overview' %}
+  <div class="grid grid-4">
+    <div class="card stat-card"><div class="num">{{ stats.users }}</div><div class="label">注册用户</div></div>
+    <div class="card stat-card"><div class="num">{{ stats.products }}</div><div class="label">商品总数</div></div>
+    <div class="card stat-card"><div class="num">{{ stats.pending }}</div><div class="label">待审核商品</div></div>
+    <div class="card stat-card"><div class="num">{{ stats.orders }}</div><div class="label">采购需求单</div></div>
+    <div class="card stat-card"><div class="num">{{ stats.scans }}</div><div class="label">累计识别次数</div></div>
+    <div class="card stat-card"><div class="num">{{ stats.crop_scans }}</div><div class="label">作物识别</div></div>
+    <div class="card stat-card"><div class="num">{{ stats.dis_scans }}</div><div class="label">病害诊断</div></div>
+    <div class="card stat-card"><div class="num">{{ stats.messages }}</div><div class="label">咨询留言</div></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:20px;align-items:start;">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">识别热点（作物）</h3>
+      {% if top_crops %}
+      <div class="detail-list">
+        {% for t in top_crops %}
+        <div class="detail-item"><dt>{{ t.result_name }}</dt><dd>{{ t.c }} 次识别</dd></div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="muted" style="margin:0;">暂无识别数据</p>{% endif %}
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:14px;">最近的识别记录</h3>
+      {% if history %}
+      <div class="detail-list">
+        {% for h in history[:6] %}
+        <div class="detail-item"><dt>{{ h.created_at }}</dt><dd>{{ '作物' if h.kind=='crop' else '病害' }} · {{ h.result_name }}（{{ h.confidence }}%）</dd></div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="muted" style="margin:0;">暂无识别数据</p>{% endif %}
+    </div>
+  </div>
+
+  {% elif tab=='products' %}
+  <div class="card">
+    <div class="table-wrap"><table class="table">
+      <tr><th>ID</th><th>商品</th><th>产地/供货</th><th>价格</th><th>库存</th><th>状态</th><th>操作</th></tr>
+      {% for p in products %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.name }}<div class="muted small">{{ p.category }}</div></td>
+        <td>{{ p.origin }}<div class="muted small">{{ p.farmer_name }}</div></td>
+        <td>¥{{ '%.2f'|format(p.price) }}/{{ p.unit }}</td>
+        <td>{{ p.stock }}</td>
+        <td>{% if p.status=='approved' %}<span class="tag ok">已上架</span>{% elif p.status=='pending' %}<span class="tag warn">待审核</span>{% else %}<span class="tag gray">已驳回</span>{% endif %}</td>
+        <td style="white-space:nowrap;">
+          {% if p.status!='approved' %}<a class="btn btn-outline btn-sm" href="{{ url_for('admin_product', pid=p.id, action='approve') }}">通过</a>{% endif %}
+          {% if p.status!='rejected' %}<a class="btn btn-outline btn-sm" href="{{ url_for('admin_product', pid=p.id, action='reject') }}">驳回</a>{% endif %}
+          <a class="btn btn-outline btn-sm" href="{{ url_for('admin_product', pid=p.id, action='delete') }}">删除</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table></div>
+  </div>
+
+  {% elif tab=='orders' %}
+  <div class="card">
+    <div class="table-wrap"><table class="table">
+      <tr><th>单号</th><th>联系人</th><th>商品明细</th><th>金额</th><th>状态</th><th>操作</th></tr>
+      {% for o in orders %}
+      <tr>
+        <td>{{ o.order_no }}<div class="muted small">{{ o.created_at }}</div></td>
+        <td>{{ o.buyer }}<div class="muted small">{{ o.phone }}</div></td>
+        <td style="max-width:340px;color:var(--text-2);">{{ o.items }}<div class="muted small">地址：{{ o.address or '未填写' }}</div></td>
+        <td>¥{{ '%.2f'|format(o.total) }}</td>
+        <td><span class="tag {% if o.status=='待农户联系' %}warn{% else %}ok{% endif %}">{{ o.status }}</span></td>
+        <td style="white-space:nowrap;">
+          <a class="btn btn-outline btn-sm" href="{{ url_for('admin_order', oid=o.id, status='已联系') }}">标记已联系</a>
+          <a class="btn btn-outline btn-sm" href="{{ url_for('admin_order', oid=o.id, status='已完成') }}">完成</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">暂无需求单</td></tr>
+      {% endfor %}
+    </table></div>
+  </div>
+
+  {% elif tab=='messages' %}
+  <div class="card">
+    {% for m in messages %}
+    <div class="card" style="box-shadow:none;background:var(--green-050);margin-bottom:12px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div><strong>{{ m.name }}</strong> <span class="muted small">{{ m.contact }}</span>
+          <div class="muted small">{{ m.product_name or '平台咨询' }} · {{ m.created_at }}</div></div>
+      </div>
+      <p style="margin:8px 0;">{{ m.content }}</p>
+      {% if m.reply %}<p style="margin:0 0 10px;color:var(--green-700);font-size:14px;">已回复：{{ m.reply }}</p>{% endif %}
+      <form method="post" action="{{ url_for('admin_message', mid=m.id) }}" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input class="input" name="reply" placeholder="填写回复内容" style="flex:1;min-width:200px;">
+        <button class="btn btn-primary btn-sm" type="submit">保存回复</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="empty"><svg><use href="#i-phone"></use></svg><p>暂无咨询留言</p></div>
+    {% endfor %}
+  </div>
+
+  {% elif tab=='users' %}
+  <div class="card">
+    <div class="table-wrap"><table class="table">
+      <tr><th>ID</th><th>用户名</th><th>电话</th><th>角色</th><th>所在地</th><th>注册时间</th></tr>
+      {% for u in users %}
+      <tr><td>{{ u.id }}</td><td>{{ u.username }}</td><td>{{ u.phone or '-' }}</td>
+        <td>{% if u.role=='admin' %}<span class="tag">管理员</span>{% else %}<span class="tag gray">普通用户</span>{% endif %}</td>
+        <td>{{ u.village or '-' }}</td><td class="muted">{{ u.created_at }}</td></tr>
+      {% endfor %}
+    </table></div>
+  </div>
+
+  {% else %}
+  <div class="card">
+    <div class="table-wrap"><table class="table">
+      <tr><th>时间</th><th>类型</th><th>识别结果</th><th>置信度</th><th>图片</th></tr>
+      {% for h in history %}
+      <tr><td class="muted">{{ h.created_at }}</td>
+        <td>{{ '作物识别' if h.kind=='crop' else '病害诊断' }}</td>
+        <td>{{ h.result_name }}</td><td>{{ h.confidence }}%</td>
+        <td><img src="{{ h.image }}" style="width:46px;height:46px;border-radius:8px;object-fit:cover;"></td></tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">暂无识别记录</td></tr>
+      {% endfor %}
+    </table></div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

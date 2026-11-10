@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}采购清单 · 慧农 AI{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="crumb"><a href="{{ url_for('index') }}">首页</a> / <a href="{{ url_for('shop') }}">农产品商城</a> / 采购清单</div>
+  <div class="section-head"><div><h1 style="margin:0;">采购清单</h1>
+    <p>确认商品后填写联系方式提交需求，由农户直接与您联系</p></div></div>
+
+  {% if items %}
+  <div class="card">
+    {% for i in items %}
+    <div class="cart-row">
+      <div class="cart-thumb">{% set pimg = product_image(i.name, i.image) %}{% if pimg %}<img src="{{ asset(pimg) }}" alt="{{ i.name }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">{% else %}<svg style="width:36px;height:36px;"><use href="#i-{{ i.icon }}"></use></svg>{% endif %}</div>
+      <div>
+        <a href="{{ url_for('product_detail', pid=i.id) }}" style="font-weight:700;color:var(--green-900);">{{ i.name }}</a>
+        <p class="muted small" style="margin:2px 0 0;">产地：{{ i.origin }} · 供货：{{ i.farmer_name }}</p>
+        <p class="price" style="font-size:17px;margin:4px 0 0;">¥{{ '%.2f'|format(i.price) }} <small>/ {{ i.unit }}</small></p>
+      </div>
+      <div class="cart-actions" style="display:flex;align-items:center;gap:14px;">
+        <form method="post" action="{{ url_for('cart_update') }}" style="display:flex;align-items:center;gap:8px;">
+          <input type="hidden" name="id" value="{{ i.id }}">
+          <div class="qty-box">
+            <button type="submit" name="qty" value="{{ i.qty - 1 }}">-</button>
+            <span>{{ i.qty }}</span>
+            <button type="submit" name="qty" value="{{ i.qty + 1 }}">+</button>
+          </div>
+        </form>
+        <span style="font-weight:700;min-width:78px;text-align:right;">¥{{ '%.2f'|format(i.price * i.qty) }}</span>
+        <a class="muted small" href="{{ url_for('cart_remove', cid=i.id) }}">移除</a>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="cart-summary">
+      <div>
+        <span class="muted">合计（不含运费）</span>
+        <div class="price" style="font-size:26px;">¥{{ '%.2f'|format(total) }}</div>
+      </div>
+      <a class="btn btn-outline" href="{{ url_for('shop') }}">继续挑选</a>
+    </div>
+  </div>
+
+  <form class="card" method="post" action="{{ url_for('cart_submit') }}" style="margin-top:22px;">
+    <h3 style="margin-bottom:14px;">提交采购需求</h3>
+    <p class="muted small" style="margin-bottom:16px;">平台不代收货款，提交后由农户电话与您确认规格、运费和付款方式。</p>
+    <div class="form-grid">
+      <div class="field"><label>联系人姓名</label><input class="input" name="buyer" placeholder="请输入姓名" required></div>
+      <div class="field"><label>联系电话</label><input class="input" name="phone" placeholder="请输入手机号" required></div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label>收货地址或备注</label>
+      <textarea class="input" name="address" placeholder="可填写收货地、期望发货时间、规格要求等"></textarea>
+    </div>
+    <button class="btn btn-primary btn-lg" style="margin-top:18px;" type="submit"><svg><use href="#i-phone"></use></svg>提交需求</button>
+  </form>
+  {% else %}
+  <div class="card empty">
+    <svg><use href="#i-cart"></use></svg>
+    <p>清单还是空的，去商城看看产地直供的农产品</p>
+    <a class="btn btn-primary" style="margin-top:12px;" href="{{ url_for('shop') }}">去商城</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
