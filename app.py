@@ -371,14 +371,19 @@ def crop_recognize():
                     alts = [{"name": t["cn"], "slug": t["slug"], "confidence": t["conf"]}
                             for t in sp.get("top", [])[1:]
                             if db.query("SELECT id FROM crops WHERE slug=?", [t["slug"]], one=True)]
-                    sp_used = sp
+                    # 叶片病害模型拒识时，物种通道只是"外观最像"的猜测，不能当作确定结论：
+                    # 标成疑似，由页面提示用户核对（避免出现"上面说已拒识、下面写番茄 79%"的矛盾）。
+                    sp_used = dict(sp)
+                    if not ai.get("known"):
+                        sp_used["maybe"] = True
         if crop:
             db.execute("INSERT INTO history(user_key,kind,image,result_name,confidence,created_at)"
                        " VALUES(?,?,?,?,?,?)",
                        [cart_key(), "crop", url, crop["name"], conf, now()])
             result = {"crop": crop, "confidence": conf, "image": url,
                       "alts": alts, "analysis": describe(feat), "ai": ai,
-                      "species": sp_used}
+                      "species": sp_used,
+                      "crop_from_species": bool(sp_used)}
         else:
             result = {"image": url, "analysis": describe(feat), "ai": ai,
                       "aux": (ai.get("aux") if isinstance(ai, dict) else None),

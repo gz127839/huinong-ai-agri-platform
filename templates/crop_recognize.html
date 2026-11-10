@@ -91,8 +91,11 @@
           <div class="result-head" style="margin-bottom:18px;">
             <div class="confidence-ring" style="--p:{{ result.confidence }};"><span>{{ result.confidence }}%</span></div>
             <div>
-              <h2 style="margin:0 0 4px;">{{ result.crop.name }} <span class="tag">{{ result.crop.category }}</span></h2>
-              <p class="muted" style="margin:0;">别名：{{ result.crop.alias }} · 识别置信度 {{ result.confidence }}%（结果仅供参考，结合实际田间情况判断）</p>
+              <h2 style="margin:0 0 4px;">{{ result.crop.name }}
+                {% if result.crop_from_species %}<span class="tag warn">疑似 · 仅按外观推断</span>
+                {% else %}<span class="tag">{{ result.crop.category }}</span>{% endif %}</h2>
+              <p class="muted" style="margin:0;">别名：{{ result.crop.alias }} · 识别置信度 {{ result.confidence }}%（结果仅供参考，结合实际田间情况判断）
+                {% if result.crop_from_species %}<br><b>说明：</b>叶片病害模型未认可这张照片，作物品类是按外观推断的最可能结果（14 类实景照片实测约 7 成命中），下方的科普内容对应「{{ result.crop.name }}」，请先核对田间实物；要获得病害结论，请改拍单叶特写。{% endif %}</p>
             </div>
           </div>
           {% if result.alts %}
@@ -143,7 +146,8 @@
               <p class="muted" style="margin:0;">作物<b>物种识别</b>模型（2 000+ 张 iNaturalist 田间实景照片训练）
                  认出这是「{{ result.species.cn }}」，置信度 {{ result.species.conf_pct }}%，
                  与该类原型的匹配度 {{ result.species.sim }}%。
-                 病害诊断模型基于作物<b>叶片</b>样本训练，如需病害结论请再上传叶片特写照片。</p>
+                 病害诊断模型基于作物<b>叶片</b>样本训练，如需病害结论请再上传叶片特写照片。
+                 {% if result.species.maybe %}<br><b>注意：</b>叶片病害模型未认可这张照片，上面的作物结论只是按外观推断的最可能品类（14 类实景照片实测约 7 成命中），请以田间实物核对。{% endif %}</p>
               {% if result.species.slug %}
               <p style="margin:8px 0 0;"><a href="{{ url_for('crop_detail', slug=result.species.slug) }}">查看「{{ result.species.cn }}」的科普与病虫害知识 →</a></p>
               {% endif %}

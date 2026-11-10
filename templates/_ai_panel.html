@@ -18,8 +18,9 @@
   {% if result.ai.top %}
   {% if result.ai.known is defined and not result.ai.known %}
   <p class="muted small" style="margin:0 0 8px;color:var(--warn,#a15c00);">
-    开放集检测未通过（匹配度 {{ result.ai.ood_sim }}%），以下仅为最接近的已知类别，<strong>不构成诊断结论</strong>。</p>
-  {% endif %}
+    开放集检测未通过（与已收录类别的匹配度 {{ result.ai.ood_sim }}%），<strong>平台已主动拒识，不输出病害排名与结论</strong>。
+    这是刻意的安全策略：宁可回答「不认识」，也不猜一个病害名让农户打错药。如需诊断，请改用叶片特写、单叶占画面主体的照片重拍。</p>
+  {% else %}
   <table class="ai-table">
     <thead><tr><th>排名</th><th>模型判定</th><th>作物</th><th>置信度</th></tr></thead>
     <tbody>
@@ -28,11 +29,12 @@
         <td>{{ loop.index }}</td>
         <td>{{ t.cn }}{% if t.healthy %} <span class="tag ok">健康</span>{% endif %}</td>
         <td>{{ t.crop_cn }}</td>
-        <td>{{ t.conf }}%</td>
+        <td>{% if t.conf < 0.1 %}&lt;0.1%{% else %}{{ t.conf }}%{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  {% endif %}
   {% endif %}
 
   {% if result.ai.healthy is defined and result.ai.healthy_prob %}
