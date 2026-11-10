@@ -11,6 +11,7 @@
 """
 import json
 import os
+import secrets
 import uuid
 from datetime import datetime
 from functools import wraps
@@ -52,7 +53,43 @@ ALLOWED = {"jpg", "jpeg", "png", "bmp", "webp", "gif"}
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "smart-agri-2026-secret-key")
+
+
+def _load_secret_key():
+    """会话密钥：优先环境变量；未配置则用本机随机密钥并持久化到 data/.secret_key。
+
+    不写死默认值——写死的密钥会随源码公开，公网部署时任何人都能伪造登录会话。
+    """
+    env_key = (os.environ.get("SECRET_KEY") or "").strip()
+    if env_key and env_key != "change-me-to-a-random-string":
+        return env_key
+    key_file = os.path.join(BASE_DIR, "data", ".secret_key")
+    try:
+        if os.path.exists(key_file):
+            with open(key_file, "r", encoding="utf-8") as fh:
+                saved = fh.read().strip()
+            if len(saved) >= 32:
+                return saved
+        new_key = secrets.token_hex(32)
+        os.makedirs(os.path.dirname(key_file), exist_ok=True)
+        with open(key_file, "w", encoding="utf-8") as fh:
+            fh.write(new_key)
+        try:
+            os.chmod(key_file, 0o600)
+        except OSError:
+            pass
+        return new_key
+    except OSError:
+        # 目录不可写时退回进程内随机密钥：重启后需重新登录，但不会被伪造
+        return secrets.token_hex(32)
+
+
+app.secret_key = _load_secret_key()
+# 会话 Cookie 安全属性：禁止脚本读取、跨站请求不带 Cookie
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
 # 改完模板不必重启服务也能生效
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024

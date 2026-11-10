@@ -18,6 +18,8 @@ _e2e.log
 # ---------- 环境变量与密钥 ----------
 .env
 .env.local
+data/.secret_key
+*.bak_cleanup_*
 
 # ---------- 运行时生成的热力图 ----------
 static/img/ai/cam_*.png
